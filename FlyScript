@@ -486,40 +486,6 @@ header.Parent           = panel
 header.Active          = true
 Instance.new("UICorner", header).CornerRadius = UDim.new(0, 10)
 
--- header drag support
-local headerDragging = false
-local dragStart = Vector2.new()
-local panelStartPos = UDim2.new()
-
-local function updatePanelPosition(input)
-    local delta = input.Position - dragStart
-    panel.Position = UDim2.new(
-        panelStartPos.X.Scale,
-        panelStartPos.X.Offset + delta.X,
-        panelStartPos.Y.Scale,
-        panelStartPos.Y.Offset + delta.Y
-    )
-end
-
-header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        headerDragging = true
-        dragStart = input.Position
-        panelStartPos = panel.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                headerDragging = false
-            end
-        end)
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if headerDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        updatePanelPosition(input)
-    end
-end)
-
 -- square fix bottom of header
 local hFix = Instance.new("Frame")
 hFix.Size             = UDim2.new(1, 0, 0.5, 0)
@@ -588,16 +554,86 @@ closeBtn.Parent           = header
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
 -- ── CONTENT AREA ─────────────────────────────────
+local tabBar = Instance.new("Frame")
+tabBar.Size             = UDim2.new(1, -14, 0, 30)
+tabBar.Position         = UDim2.new(0, 7, 0, 34)
+tabBar.BackgroundColor3 = Color3.fromRGB(15, 20, 35)
+tabBar.BorderSizePixel  = 0
+tabBar.ZIndex           = 11
+tabBar.Parent           = panel
+Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 6)
+
 local content = Instance.new("Frame")
-content.Size                  = UDim2.new(1, 0, 1, -34)
-content.Position              = UDim2.new(0, 0, 0, 34)
+content.Size                  = UDim2.new(1, 0, 1, -64)
+content.Position              = UDim2.new(0, 0, 0, 64)
 content.BackgroundTransparency = 1
 content.ClipsDescendants      = true
 content.ZIndex                = 11
 content.Parent                = panel
 
+local pages = {}
+
+local function createPage(name)
+    local page = Instance.new("Frame")
+    page.Name                   = name .. "Page"
+    page.Size                   = UDim2.new(1, 0, 1, 0)
+    page.Position               = UDim2.new(0, 0, 0, 0)
+    page.BackgroundTransparency = 1
+    page.ZIndex                 = 11
+    page.ClipsDescendants       = true
+    page.Parent                 = content
+    page.Visible                = false
+    pages[name] = page
+    return page
+end
+
+local flightPage   = createPage("flight")
+local speedPage    = createPage("speed")
+local keybindsPage = createPage("keybinds")
+local infoPage     = createPage("info")
+
+local function setActiveTab(name)
+    for tabName, page in pairs(pages) do
+        page.Visible = tabName == name
+    end
+    for childIndex, child in ipairs(tabBar:GetChildren()) do
+        if child:IsA("TextButton") then
+            local active = child.Name == name
+            child.BackgroundColor3 = active and Color3.fromRGB(35, 75, 170) or Color3.fromRGB(18, 22, 42)
+            child.TextColor3       = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(170, 190, 230)
+        end
+    end
+end
+
+local function createTab(name, title, positionScale)
+    local button = Instance.new("TextButton")
+    button.Name               = name
+    button.Size               = UDim2.new(0.25, 0, 1, 0)
+    button.Position           = UDim2.new(positionScale, 0, 0, 0)
+    button.BackgroundColor3   = Color3.fromRGB(18, 22, 42)
+    button.BorderSizePixel    = 0
+    button.Text               = title
+    button.Font               = Enum.Font.GothamBold
+    button.TextSize           = 11
+    button.TextColor3         = Color3.fromRGB(170, 190, 230)
+    button.ZIndex             = 12
+    button.Parent             = tabBar
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 7)
+    button.MouseButton1Click:Connect(function()
+        setActiveTab(name)
+    end)
+    return button
+end
+
+createTab("flight", "FLY", 0)
+createTab("speed", "SPEED", 0.25)
+createTab("keybinds", "KEYBINDS", 0.5)
+createTab("info", "INFO", 0.75)
+
+setActiveTab("flight")
+
 -- Helper: create a category section header
-local function makeSection(yPos, icon, title)
+local function makeSection(parent, yPos, icon, title)
     local sec = Instance.new("Frame")
     sec.Size                  = UDim2.new(1, 0, 0, 20)
     sec.Position              = UDim2.new(0, 0, 0, yPos)
@@ -605,7 +641,7 @@ local function makeSection(yPos, icon, title)
     sec.BackgroundTransparency = 0
     sec.BorderSizePixel       = 0
     sec.ZIndex                = 12
-    sec.Parent                = content
+    sec.Parent                = parent
 
     local accent = Instance.new("Frame")
     accent.Size             = UDim2.new(0, 2, 0, 12)
@@ -645,7 +681,7 @@ end
 -- ════════════════════════════════════════════════
 --  CATEGORY 1: FLIGHT CONTROL  (y = 6)
 -- ════════════════════════════════════════════════
-makeSection(6, "▶", "FLIGHT CONTROL")
+makeSection(flightPage, 6, "▶", "FLIGHT CONTROL")
 
 -- Fly toggle button
 local flyBtn = Instance.new("TextButton")
@@ -658,7 +694,7 @@ flyBtn.TextSize          = 11
 flyBtn.Font              = Enum.Font.GothamBold
 flyBtn.TextColor3        = Color3.fromRGB(255, 255, 255)
 flyBtn.ZIndex           = 12
-flyBtn.Parent           = content
+flyBtn.Parent           = flightPage
 Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 6)
 
 -- Status row
@@ -667,7 +703,7 @@ statusRow.Size                  = UDim2.new(1, -14, 0, 18)
 statusRow.Position              = UDim2.new(0, 7, 0, 66)
 statusRow.BackgroundTransparency = 1
 statusRow.ZIndex                = 12
-statusRow.Parent                = content
+statusRow.Parent                = flightPage
 
 local statusLbl = Instance.new("TextLabel")
 statusLbl.Size                   = UDim2.new(0.5, 0, 1, 0)
@@ -699,12 +735,12 @@ div1.Position         = UDim2.new(0, 7, 0, 89)
 div1.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div1.BorderSizePixel  = 0
 div1.ZIndex           = 12
-div1.Parent           = content
+div1.Parent           = flightPage
 
 -- ════════════════════════════════════════════════
---  CATEGORY 2: SPEED  (y = 94)
+--  CATEGORY 2: SPEED  (y = 6)
 -- ════════════════════════════════════════════════
-makeSection(94, "⚡", "SPEED")
+makeSection(speedPage, 6, "⚡", "SPEED")
 
 -- Speed label row
 local speedLbl = Instance.new("TextLabel")
@@ -717,7 +753,7 @@ speedLbl.Font                    = Enum.Font.Gotham
 speedLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
 speedLbl.TextXAlignment          = Enum.TextXAlignment.Left
 speedLbl.ZIndex                  = 12
-speedLbl.Parent                  = content
+speedLbl.Parent                  = speedPage
 
 local speedVal = Instance.new("TextBox")
 speedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
@@ -730,7 +766,7 @@ speedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
 speedVal.TextXAlignment          = Enum.TextXAlignment.Right
 speedVal.ClearTextOnFocus        = false
 speedVal.ZIndex                  = 12
-speedVal.Parent                  = content
+speedVal.Parent                  = speedPage
 
 -- Slider track
 local track = Instance.new("Frame")
@@ -739,7 +775,7 @@ track.Position         = UDim2.new(0, 7, 0, 137)
 track.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
 track.BorderSizePixel  = 0
 track.ZIndex           = 12
-track.Parent           = content
+track.Parent           = speedPage
 Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
 
 local initPct = (flySpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
@@ -773,7 +809,7 @@ minLbl.Font                    = Enum.Font.Gotham
 minLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 minLbl.TextXAlignment          = Enum.TextXAlignment.Left
 minLbl.ZIndex                  = 12
-minLbl.Parent                  = content
+minLbl.Parent                  = speedPage
 
 local maxLbl = Instance.new("TextLabel")
 maxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
@@ -785,7 +821,7 @@ maxLbl.Font                    = Enum.Font.Gotham
 maxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 maxLbl.TextXAlignment          = Enum.TextXAlignment.Right
 maxLbl.ZIndex                  = 12
-maxLbl.Parent                  = content
+maxLbl.Parent                  = speedPage
 
 local walkLbl = Instance.new("TextLabel")
 walkLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
@@ -797,7 +833,7 @@ walkLbl.Font                    = Enum.Font.Gotham
 walkLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
 walkLbl.TextXAlignment          = Enum.TextXAlignment.Left
 walkLbl.ZIndex                  = 12
-walkLbl.Parent                  = content
+walkLbl.Parent                  = speedPage
 
 local walkSpeedVal = Instance.new("TextBox")
 walkSpeedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
@@ -810,7 +846,7 @@ walkSpeedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
 walkSpeedVal.TextXAlignment          = Enum.TextXAlignment.Right
 walkSpeedVal.ClearTextOnFocus        = false
 walkSpeedVal.ZIndex                  = 12
-walkSpeedVal.Parent                  = content
+walkSpeedVal.Parent                  = speedPage
 
 local walkTrack = Instance.new("Frame")
 walkTrack.Size             = UDim2.new(1, -14, 0, 6)
@@ -818,7 +854,7 @@ walkTrack.Position         = UDim2.new(0, 7, 0, 187)
 walkTrack.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
 walkTrack.BorderSizePixel  = 0
 walkTrack.ZIndex           = 12
-walkTrack.Parent           = content
+walkTrack.Parent           = speedPage
 Instance.new("UICorner", walkTrack).CornerRadius = UDim.new(1, 0)
 
 local initWalkPct = (walkSpeed - MIN_WALK) / (MAX_WALK - MIN_WALK)
@@ -851,7 +887,7 @@ walkMinLbl.Font                    = Enum.Font.Gotham
 walkMinLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 walkMinLbl.TextXAlignment          = Enum.TextXAlignment.Left
 walkMinLbl.ZIndex                  = 12
-walkMinLbl.Parent                  = content
+walkMinLbl.Parent                  = speedPage
 
 local walkMaxLbl = Instance.new("TextLabel")
 walkMaxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
@@ -863,7 +899,7 @@ walkMaxLbl.Font                    = Enum.Font.Gotham
 walkMaxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 walkMaxLbl.TextXAlignment          = Enum.TextXAlignment.Right
 walkMaxLbl.ZIndex                  = 12
-walkMaxLbl.Parent                  = content
+walkMaxLbl.Parent                  = speedPage
 
 -- Divider
 local div2 = Instance.new("Frame")
@@ -872,7 +908,7 @@ div2.Position         = UDim2.new(0, 7, 0, 218)
 div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div2.BorderSizePixel  = 0
 div2.ZIndex           = 12
-div2.Parent           = content
+div2.Parent           = speedPage
 
 local function clampFlySpeed(text)
     local value = tonumber(text)
@@ -910,9 +946,9 @@ walkSpeedVal.FocusLost:Connect(function()
 end)
 
 -- ════════════════════════════════════════════════
---  CATEGORY 3: KEYBINDS  (y = 168)
+--  CATEGORY 3: KEYBINDS  (y = 6)
 -- ════════════════════════════════════════════════
-makeSection(222, "⌨", "KEYBINDS")
+makeSection(keybindsPage, 6, "⌨", "KEYBINDS")
 
 local function makeBindRow(y, key, action)
     local row = Instance.new("Frame")
@@ -920,7 +956,7 @@ local function makeBindRow(y, key, action)
     row.Position              = UDim2.new(0, 7, 0, y)
     row.BackgroundTransparency = 1
     row.ZIndex                = 12
-    row.Parent                = content
+    row.Parent                = keybindsPage
 
     local keyBadge = Instance.new("Frame")
     keyBadge.Size             = UDim2.new(0, 38, 0, 14)
@@ -971,12 +1007,12 @@ div3.Position         = UDim2.new(0, 7, 0, 320)
 div3.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div3.BorderSizePixel  = 0
 div3.ZIndex           = 12
-div3.Parent           = content
+div3.Parent           = keybindsPage
 
 -- ════════════════════════════════════════════════
 --  CATEGORY 4: INFO  (y = 324)
 -- ════════════════════════════════════════
-makeSection(324, "ℹ", "INFO")
+makeSection(infoPage, 6, "ℹ", "INFO")
 
 local infoLbl = Instance.new("TextLabel")
 infoLbl.Size                   = UDim2.new(1, -14, 0, 15)
@@ -988,7 +1024,7 @@ infoLbl.Font                    = Enum.Font.Gotham
 infoLbl.TextColor3              = Color3.fromRGB(38, 55, 100)
 infoLbl.TextXAlignment          = Enum.TextXAlignment.Left
 infoLbl.ZIndex                  = 12
-infoLbl.Parent                  = content
+infoLbl.Parent                  = infoPage
 
 -- ================================================
 --  MINIMIZE
