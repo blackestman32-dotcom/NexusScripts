@@ -456,8 +456,8 @@ end)
 -- ================================================
 
 -- Panel dimensions
-local PANEL_W     = 210
-local PANEL_H_FULL = 380
+local PANEL_W     = 260
+local PANEL_H_FULL = 430
 
 local panel = Instance.new("Frame")
 panel.Name             = "Panel"
@@ -466,7 +466,7 @@ panel.Position         = UDim2.new(0.5, -PANEL_W/2, 0.5, -PANEL_H_FULL/2)
 panel.BackgroundColor3 = Color3.fromRGB(12, 16, 28)
 panel.BorderSizePixel  = 0
 panel.Active           = true
-panel.Draggable        = true
+panel.Draggable        = false
 panel.ZIndex           = 10
 panel.Parent           = screenGui
 Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 10)
@@ -483,7 +483,42 @@ header.BackgroundColor3 = Color3.fromRGB(23, 30, 50)
 header.BorderSizePixel  = 0
 header.ZIndex           = 11
 header.Parent           = panel
+header.Active          = true
 Instance.new("UICorner", header).CornerRadius = UDim.new(0, 10)
+
+-- header drag support
+local headerDragging = false
+local dragStart = Vector2.new()
+local panelStartPos = UDim2.new()
+
+local function updatePanelPosition(input)
+    local delta = input.Position - dragStart
+    panel.Position = UDim2.new(
+        panelStartPos.X.Scale,
+        panelStartPos.X.Offset + delta.X,
+        panelStartPos.Y.Scale,
+        panelStartPos.Y.Offset + delta.Y
+    )
+end
+
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        headerDragging = true
+        dragStart = input.Position
+        panelStartPos = panel.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                headerDragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if headerDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updatePanelPosition(input)
+    end
+end)
 
 -- square fix bottom of header
 local hFix = Instance.new("Frame")
