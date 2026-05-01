@@ -1,0 +1,200 @@
+-- ================================================
+--   Nexus Hub UI
+--   LocalScript → StarterPlayerScripts
+-- ================================================
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService     = game:GetService("TweenService")
+local tweenEase        = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- ================================================
+--  FLY STATE
+-- ================================================
+local flying      = false
+local flySpeed    = 60
+local walkSpeed   = 16
+local bodyVelocity, bodyGyro, flyConnection
+
+local MIN_SPEED = 10
+local MAX_SPEED = 250
+local MIN_WALK  = 8
+local MAX_WALK  = 250
+
+local function applyWalkSpeed()
+    local char = player.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = walkSpeed end
+end
+
+if player.Character then
+    applyWalkSpeed()
+end
+
+-- ================================================
+--  RAYFIELD UI
+-- ================================================
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/master/source.lua"))()
+local Window = Rayfield:CreateWindow({
+    Name = "Nexus Hub",
+    LoadingTitle = "Nexus Hub",
+    LoadingSubtitle = "Universal Edition",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = nil,
+    },
+    Discord = {
+        Enabled = false,
+    },
+    KeySystem = false,
+})
+
+local flyTab = Window:CreateTab("FLY")
+local walkTab = Window:CreateTab("WALKSPEED")
+local keybindsTab = Window:CreateTab("KEYBINDS")
+local infoTab = Window:CreateTab("INFO")
+
+local flightSection = flyTab:CreateSection("Flight Controls")
+local flyToggle = flightSection:CreateToggle({
+    Name = "Enable Flight",
+    CurrentValue = false,
+    Flag = "FlyToggle",
+    Callback = function(value)
+        if value ~= flying then
+            toggleFly()
+        end
+    end,
+})
+flightSection:CreateSlider({
+    Name = "Fly Speed",
+    Range = {MIN_SPEED, MAX_SPEED},
+    Increment = 1,
+    CurrentValue = flySpeed,
+    Flag = "Fly Speed",
+    Callback = function(value)
+        clampFlySpeed(value)
+    end,
+})
+flightSection:CreateLabel("Press [F] to toggle flight")
+
+local walkSection = walkTab:CreateSection("Walk Speed")
+walkSection:CreateSlider({
+    Name = "Walk Speed",
+    Range = {MIN_WALK, MAX_WALK},
+    Increment = 1,
+    CurrentValue = walkSpeed,
+    Flag = "Walk Speed",
+    Callback = function(value)
+        clampWalkSpeed(value)
+    end,
+})
+
+local keybindsSection = keybindsTab:CreateSection("Keybinds")
+keybindsSection:CreateLabel("F - Toggle fly on/off")
+keybindsSection:CreateLabel("W/A/S/D - Directional flight")
+keybindsSection:CreateLabel("Space - Ascend")
+keybindsSection:CreateLabel("Left Shift - Descend")
+
+local infoSection = infoTab:CreateSection("Info")
+infoSection:CreateLabel("Nexus Hub  •  v3.0")
+infoSection:CreateLabel("TESTING")
+
+-- ================================================
+--  FLY ENGINE
+-- ================================================
+local function enableFly()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum  = char:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
+
+    hum.PlatformStand = true
+
+    bodyVelocity           = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity  = Vector3.zero
+    bodyVelocity.MaxForce  = Vector3.new(1e5, 1e5, 1e5)
+    bodyVelocity.Parent    = root
+
+    bodyGyro           = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    bodyGyro.D         = 100
+    bodyGyro.CFrame    = root.CFrame
+    bodyGyro.Parent    = root
+
+    flyConnection = RunService.Heartbeat:Connect(function()
+        local c = player.Character
+        if not c then return end
+        local r = c:FindFirstChild("HumanoidRootPart")
+        if not r then return end
+
+        local dir = Vector3.zero
+        local cam = camera.CFrame
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W)         then dir += cam.LookVector  end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S)         then dir -= cam.LookVector  end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A)         then dir -= cam.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D)         then dir += cam.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space)     then dir += Vector3.yAxis   end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir -= Vector3.yAxis   end
+
+        if dir.Magnitude > 0 then dir = dir.Unit end
+
+        if bodyVelocity and bodyVelocity.Parent then
+            bodyVelocity.Velocity = dir * flySpeed
+        end
+        if bodyGyro and bodyGyro.Parent then
+            bodyGyro.CFrame = cam
+        end
+    end)
+end
+
+local function disableFly()
+    if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+    if bodyVelocity  then bodyVelocity:Destroy();    bodyVelocity  = nil end
+    if bodyGyro      then bodyGyro:Destroy();         bodyGyro      = nil end
+
+    local char = player.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.PlatformStand = false
+            hum.WalkSpeed = walkSpeed
+        end
+    end
+end
+
+local function setVisuals(on)
+    if flyToggle and flyToggle.SetValue then
+        pcall(function()
+            flyToggle:SetValue(on)
+        end)
+    end
+end
+
+local function toggleFly()
+    flying = not flying
+    if flying then enableFly() else disableFly() end
+    setVisuals(flying)
+end
+
+-- ================================================
+--  INTERACTIONS
+-- ================================================
+UserInputService.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.F then toggleFly() end
+end)
+
+player.CharacterAdded:Connect(function()
+    flying = false
+    setVisuals(false)
+    bodyVelocity, bodyGyro = nil, nil
+    if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+    applyWalkSpeed()
+end)
