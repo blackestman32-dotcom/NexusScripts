@@ -17,10 +17,24 @@ local camera = workspace.CurrentCamera
 -- ================================================
 local flying      = false
 local flySpeed    = 60
+local walkSpeed   = 16
 local bodyVelocity, bodyGyro, flyConnection
 
 local MIN_SPEED = 10
 local MAX_SPEED = 250
+local MIN_WALK  = 8
+local MAX_WALK  = 80
+
+local function applyWalkSpeed()
+    local char = player.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = walkSpeed end
+end
+
+if player.Character then
+    applyWalkSpeed()
+end
 
 -- ================================================
 --  SCREEN GUI ROOT
@@ -443,7 +457,7 @@ end)
 
 -- Panel dimensions
 local PANEL_W     = 210
-local PANEL_H_FULL = 300
+local PANEL_H_FULL = 380
 
 local panel = Instance.new("Frame")
 panel.Name             = "Panel"
@@ -724,10 +738,87 @@ maxLbl.TextXAlignment          = Enum.TextXAlignment.Right
 maxLbl.ZIndex                  = 12
 maxLbl.Parent                  = content
 
+local walkLbl = Instance.new("TextLabel")
+walkLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
+walkLbl.Position               = UDim2.new(0, 8, 0, 168)
+walkLbl.BackgroundTransparency = 1
+walkLbl.Text                   = "Walk Speed"
+walkLbl.TextSize                = 9
+walkLbl.Font                    = Enum.Font.Gotham
+walkLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+walkLbl.TextXAlignment          = Enum.TextXAlignment.Left
+walkLbl.ZIndex                  = 12
+walkLbl.Parent                  = content
+
+local walkSpeedVal = Instance.new("TextLabel")
+walkSpeedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
+walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 168)
+walkSpeedVal.BackgroundTransparency = 1
+walkSpeedVal.Text                   = tostring(walkSpeed)
+walkSpeedVal.TextSize                = 10
+walkSpeedVal.Font                    = Enum.Font.GothamBold
+walkSpeedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
+walkSpeedVal.TextXAlignment          = Enum.TextXAlignment.Right
+walkSpeedVal.ZIndex                  = 12
+walkSpeedVal.Parent                  = content
+
+local walkTrack = Instance.new("Frame")
+walkTrack.Size             = UDim2.new(1, -14, 0, 6)
+walkTrack.Position         = UDim2.new(0, 7, 0, 187)
+walkTrack.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
+walkTrack.BorderSizePixel  = 0
+walkTrack.ZIndex           = 12
+walkTrack.Parent           = content
+Instance.new("UICorner", walkTrack).CornerRadius = UDim.new(1, 0)
+
+local initWalkPct = (walkSpeed - MIN_WALK) / (MAX_WALK - MIN_WALK)
+
+local walkFill = Instance.new("Frame")
+walkFill.Size             = UDim2.new(initWalkPct, 0, 1, 0)
+walkFill.BackgroundColor3 = Color3.fromRGB(38, 115, 235)
+walkFill.BorderSizePixel  = 0
+walkFill.ZIndex           = 13
+walkFill.Parent           = walkTrack
+Instance.new("UICorner", walkFill).CornerRadius = UDim.new(1, 0)
+
+local walkKnob = Instance.new("Frame")
+walkKnob.Size             = UDim2.new(0, 14, 0, 14)
+walkKnob.AnchorPoint      = Vector2.new(0.5, 0.5)
+walkKnob.Position         = UDim2.new(initWalkPct, 0, 0.5, 0)
+walkKnob.BackgroundColor3 = Color3.fromRGB(190, 215, 255)
+walkKnob.BorderSizePixel  = 0
+walkKnob.ZIndex           = 14
+walkKnob.Parent           = walkTrack
+Instance.new("UICorner", walkKnob).CornerRadius = UDim.new(1, 0)
+
+local walkMinLbl = Instance.new("TextLabel")
+walkMinLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
+walkMinLbl.Position               = UDim2.new(0, 8, 0, 197)
+walkMinLbl.BackgroundTransparency = 1
+walkMinLbl.Text                   = "Min: " .. MIN_WALK
+walkMinLbl.TextSize                = 8
+walkMinLbl.Font                    = Enum.Font.Gotham
+walkMinLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+walkMinLbl.TextXAlignment          = Enum.TextXAlignment.Left
+walkMinLbl.ZIndex                  = 12
+walkMinLbl.Parent                  = content
+
+local walkMaxLbl = Instance.new("TextLabel")
+walkMaxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
+walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 197)
+walkMaxLbl.BackgroundTransparency = 1
+walkMaxLbl.Text                   = "Max: " .. MAX_WALK
+walkMaxLbl.TextSize                = 8
+walkMaxLbl.Font                    = Enum.Font.Gotham
+walkMaxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+walkMaxLbl.TextXAlignment          = Enum.TextXAlignment.Right
+walkMaxLbl.ZIndex                  = 12
+walkMaxLbl.Parent                  = content
+
 -- Divider
 local div2 = Instance.new("Frame")
 div2.Size             = UDim2.new(1, -14, 0, 1)
-div2.Position         = UDim2.new(0, 7, 0, 164)
+div2.Position         = UDim2.new(0, 7, 0, 218)
 div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div2.BorderSizePixel  = 0
 div2.ZIndex           = 12
@@ -736,7 +827,7 @@ div2.Parent           = content
 -- ════════════════════════════════════════════════
 --  CATEGORY 3: KEYBINDS  (y = 168)
 -- ════════════════════════════════════════════════
-makeSection(168, "⌨", "KEYBINDS")
+makeSection(222, "⌨", "KEYBINDS")
 
 local function makeBindRow(y, key, action)
     local row = Instance.new("Frame")
@@ -783,24 +874,24 @@ local function makeBindRow(y, key, action)
     actLbl.Parent                  = row
 end
 
-makeBindRow(192, "F",       "Toggle fly on/off")
-makeBindRow(210, "W/A/S/D", "Directional flight")
-makeBindRow(228, "Space",   "Ascend")
-makeBindRow(246, "L-Shift", "Descend")
+makeBindRow(246, "F",       "Toggle fly on/off")
+makeBindRow(264, "W/A/S/D", "Directional flight")
+makeBindRow(282, "Space",   "Ascend")
+makeBindRow(300, "L-Shift", "Descend")
 
 -- Divider
 local div3 = Instance.new("Frame")
 div3.Size             = UDim2.new(1, -14, 0, 1)
-div3.Position         = UDim2.new(0, 7, 0, 266)
+div3.Position         = UDim2.new(0, 7, 0, 320)
 div3.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div3.BorderSizePixel  = 0
 div3.ZIndex           = 12
 div3.Parent           = content
 
 -- ════════════════════════════════════════════════
---  CATEGORY 4: INFO  (y = 270)
--- ════════════════════════════════════════════════
-makeSection(270, "ℹ", "INFO")
+--  CATEGORY 4: INFO  (y = 324)
+-- ════════════════════════════════════════
+makeSection(324, "ℹ", "INFO")
 
 local infoLbl = Instance.new("TextLabel")
 infoLbl.Size                   = UDim2.new(1, -14, 0, 15)
@@ -834,7 +925,8 @@ end)
 -- ================================================
 local dragging = false
 
-local function applySlider(inputX)
+local activeSlider = nil
+local function applyFlySlider(inputX)
     local tX  = track.AbsolutePosition.X
     local tW  = track.AbsoluteSize.X
     local pct = math.clamp((inputX - tX) / tW, 0, 1)
@@ -844,29 +936,62 @@ local function applySlider(inputX)
     speedVal.Text   = tostring(flySpeed)
 end
 
+local function applyWalkSlider(inputX)
+    local tX  = walkTrack.AbsolutePosition.X
+    local tW  = walkTrack.AbsoluteSize.X
+    local pct = math.clamp((inputX - tX) / tW, 0, 1)
+    walkSpeed = math.floor(MIN_WALK + pct * (MAX_WALK - MIN_WALK))
+    walkFill.Size      = UDim2.new(pct, 0, 1, 0)
+    walkKnob.Position  = UDim2.new(pct, 0, 0.5, 0)
+    walkSpeedVal.Text  = tostring(walkSpeed)
+    if not flying then applyWalkSpeed() end
+end
+
 track.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1
     or inp.UserInputType == Enum.UserInputType.Touch then
         dragging = true
-        applySlider(inp.Position.X)
+        activeSlider = "fly"
+        applyFlySlider(inp.Position.X)
     end
 end)
 knob.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1
     or inp.UserInputType == Enum.UserInputType.Touch then
         dragging = true
+        activeSlider = "fly"
+    end
+end)
+walkTrack.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        activeSlider = "walk"
+        applyWalkSlider(inp.Position.X)
+    end
+end)
+walkKnob.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        activeSlider = "walk"
     end
 end)
 UserInputService.InputChanged:Connect(function(inp)
     if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
                   or inp.UserInputType == Enum.UserInputType.Touch) then
-        applySlider(inp.Position.X)
+        if activeSlider == "fly" then
+            applyFlySlider(inp.Position.X)
+        elseif activeSlider == "walk" then
+            applyWalkSlider(inp.Position.X)
+        end
     end
 end)
 UserInputService.InputEnded:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1
     or inp.UserInputType == Enum.UserInputType.Touch then
         dragging = false
+        activeSlider = nil
     end
 end)
 
@@ -927,7 +1052,10 @@ local function disableFly()
     local char = player.Character
     if char then
         local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then hum.PlatformStand = false end
+        if hum then
+            hum.PlatformStand = false
+            hum.WalkSpeed = walkSpeed
+        end
     end
 end
 
@@ -977,4 +1105,5 @@ player.CharacterAdded:Connect(function()
     setVisuals(false)
     bodyVelocity, bodyGyro = nil, nil
     if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+    applyWalkSpeed()
 end)
