@@ -648,7 +648,7 @@ local function createTab(name, title, positionScale)
 end
 
 createTab("flight", "FLY", 0)
-createTab("speed", "SPEED", 0.25)
+createTab("speed", "WALKSPEED", 0.25)
 createTab("keybinds", "KEYBINDS", 0.5)
 createTab("info", "INFO", 0.75)
 
@@ -750,36 +750,24 @@ statusVal.TextXAlignment          = Enum.TextXAlignment.Right
 statusVal.ZIndex                  = 13
 statusVal.Parent                  = statusRow
 
--- Divider
-local div1 = Instance.new("Frame")
-div1.Size             = UDim2.new(1, -14, 0, 1)
-div1.Position         = UDim2.new(0, 7, 0, 89)
-div1.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
-div1.BorderSizePixel  = 0
-div1.ZIndex           = 12
-div1.Parent           = flightPage
+-- Fly speed section
+makeSection(flightPage, 108, "⚡", "FLY SPEED")
 
--- ════════════════════════════════════════════════
---  CATEGORY 2: SPEED  (y = 6)
--- ════════════════════════════════════════════════
-makeSection(speedPage, 6, "⚡", "SPEED")
-
--- Speed label row
 local speedLbl = Instance.new("TextLabel")
 speedLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
-speedLbl.Position               = UDim2.new(0, 8, 0, 118)
+speedLbl.Position               = UDim2.new(0, 8, 0, 112)
 speedLbl.BackgroundTransparency = 1
-speedLbl.Text                   = "Current Speed"
+speedLbl.Text                   = "Fly Speed"
 speedLbl.TextSize                = 9
 speedLbl.Font                    = Enum.Font.Gotham
 speedLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
 speedLbl.TextXAlignment          = Enum.TextXAlignment.Left
 speedLbl.ZIndex                  = 12
-speedLbl.Parent                  = speedPage
+speedLbl.Parent                  = flightPage
 
 local speedVal = Instance.new("TextBox")
 speedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
-speedVal.Position               = UDim2.new(0.55, 0, 0, 118)
+speedVal.Position               = UDim2.new(0.55, 0, 0, 112)
 speedVal.BackgroundTransparency = 0.9
 speedVal.Text                   = tostring(flySpeed)
 speedVal.TextSize                = 10
@@ -788,16 +776,15 @@ speedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
 speedVal.TextXAlignment          = Enum.TextXAlignment.Right
 speedVal.ClearTextOnFocus        = false
 speedVal.ZIndex                  = 12
-speedVal.Parent                  = speedPage
+speedVal.Parent                  = flightPage
 
--- Slider track
 local track = Instance.new("Frame")
 track.Size             = UDim2.new(1, -14, 0, 6)
-track.Position         = UDim2.new(0, 7, 0, 137)
+track.Position         = UDim2.new(0, 7, 0, 131)
 track.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
 track.BorderSizePixel  = 0
 track.ZIndex           = 12
-track.Parent           = speedPage
+track.Parent           = flightPage
 Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
 
 local initPct = (flySpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
@@ -820,10 +807,9 @@ knob.ZIndex           = 14
 knob.Parent           = track
 Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
--- Speed range labels
 local minLbl = Instance.new("TextLabel")
 minLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
-minLbl.Position               = UDim2.new(0, 8, 0, 147)
+minLbl.Position               = UDim2.new(0, 8, 0, 141)
 minLbl.BackgroundTransparency = 1
 minLbl.Text                   = "Min: " .. MIN_SPEED
 minLbl.TextSize                = 8
@@ -831,11 +817,11 @@ minLbl.Font                    = Enum.Font.Gotham
 minLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 minLbl.TextXAlignment          = Enum.TextXAlignment.Left
 minLbl.ZIndex                  = 12
-minLbl.Parent                  = speedPage
+minLbl.Parent                  = flightPage
 
 local maxLbl = Instance.new("TextLabel")
 maxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
-maxLbl.Position               = UDim2.new(0.5, 0, 0, 147)
+maxLbl.Position               = UDim2.new(0.5, 0, 0, 141)
 maxLbl.BackgroundTransparency = 1
 maxLbl.Text                   = "Max: " .. MAX_SPEED
 maxLbl.TextSize                = 8
@@ -843,11 +829,23 @@ maxLbl.Font                    = Enum.Font.Gotham
 maxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
 maxLbl.TextXAlignment          = Enum.TextXAlignment.Right
 maxLbl.ZIndex                  = 12
-maxLbl.Parent                  = speedPage
+maxLbl.Parent                  = flightPage
+
+-- Divider
+local div1 = Instance.new("Frame")
+div1.Size             = UDim2.new(1, -14, 0, 1)
+div1.Position         = UDim2.new(0, 7, 0, 160)
+div1.ZIndex           = 12
+div1.Parent           = flightPage
+
+-- ════════════════════════════════════════════════
+--  CATEGORY 2: WALKSPEED  (y = 6)
+-- ════════════════════════════════════════════════
+makeSection(speedPage, 6, "⚡", "WALKSPEED")
 
 local walkLbl = Instance.new("TextLabel")
 walkLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
-walkLbl.Position               = UDim2.new(0, 8, 0, 168)
+walkLbl.Position               = UDim2.new(0, 8, 0, 118)
 walkLbl.BackgroundTransparency = 1
 walkLbl.Text                   = "Walk Speed"
 walkLbl.TextSize                = 9
@@ -859,7 +857,7 @@ walkLbl.Parent                  = speedPage
 
 local walkSpeedVal = Instance.new("TextBox")
 walkSpeedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
-walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 168)
+walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 118)
 walkSpeedVal.BackgroundTransparency = 0.9
 walkSpeedVal.Text                   = tostring(walkSpeed)
 walkSpeedVal.TextSize                = 10
@@ -872,7 +870,7 @@ walkSpeedVal.Parent                  = speedPage
 
 local walkTrack = Instance.new("Frame")
 walkTrack.Size             = UDim2.new(1, -14, 0, 6)
-walkTrack.Position         = UDim2.new(0, 7, 0, 187)
+walkTrack.Position         = UDim2.new(0, 7, 0, 137)
 walkTrack.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
 walkTrack.BorderSizePixel  = 0
 walkTrack.ZIndex           = 12
@@ -901,7 +899,7 @@ Instance.new("UICorner", walkKnob).CornerRadius = UDim.new(1, 0)
 
 local walkMinLbl = Instance.new("TextLabel")
 walkMinLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
-walkMinLbl.Position               = UDim2.new(0, 8, 0, 197)
+walkMinLbl.Position               = UDim2.new(0, 8, 0, 147)
 walkMinLbl.BackgroundTransparency = 1
 walkMinLbl.Text                   = "Min: " .. MIN_WALK
 walkMinLbl.TextSize                = 8
@@ -913,7 +911,7 @@ walkMinLbl.Parent                  = speedPage
 
 local walkMaxLbl = Instance.new("TextLabel")
 walkMaxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
-walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 197)
+walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 147)
 walkMaxLbl.BackgroundTransparency = 1
 walkMaxLbl.Text                   = "Max: " .. MAX_WALK
 walkMaxLbl.TextSize                = 8
@@ -926,7 +924,7 @@ walkMaxLbl.Parent                  = speedPage
 -- Divider
 local div2 = Instance.new("Frame")
 div2.Size             = UDim2.new(1, -14, 0, 1)
-div2.Position         = UDim2.new(0, 7, 0, 218)
+div2.Position         = UDim2.new(0, 7, 0, 176)
 div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div2.BorderSizePixel  = 0
 div2.ZIndex           = 12
@@ -1047,6 +1045,18 @@ infoLbl.TextColor3              = Color3.fromRGB(38, 55, 100)
 infoLbl.TextXAlignment          = Enum.TextXAlignment.Left
 infoLbl.ZIndex                  = 12
 infoLbl.Parent                  = infoPage
+
+local infoDesc = Instance.new("TextLabel")
+infoDesc.Size                   = UDim2.new(1, -14, 0, 15)
+infoDesc.Position               = UDim2.new(0, 8, 0, 312)
+infoDesc.BackgroundTransparency = 1
+infoDesc.Text                   = "TESTING"
+infoDesc.TextSize                = 8
+infoDesc.Font                    = Enum.Font.Gotham
+infoDesc.TextColor3              = Color3.fromRGB(110, 140, 200)
+infoDesc.TextXAlignment          = Enum.TextXAlignment.Left
+infoDesc.ZIndex                  = 12
+infoDesc.Parent                  = infoPage
 
 -- ================================================
 --  MINIMIZE
