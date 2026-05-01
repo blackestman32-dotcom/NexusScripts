@@ -456,8 +456,8 @@ end)
 -- ================================================
 
 -- Panel dimensions
-local PANEL_W     = 260
-local PANEL_H_FULL = 430
+local PANEL_W     = 360
+local PANEL_H_FULL = 530
 
 local panel = Instance.new("Frame")
 panel.Name             = "Panel"
@@ -913,7 +913,7 @@ local walkMaxLbl = Instance.new("TextLabel")
 walkMaxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
 walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 147)
 walkMaxLbl.BackgroundTransparency = 1
-walkMaxLbl.Text                   = "Max: " .. MAX_WALK
+walkMaxLbl.Text                   = "Max: " .. MIN_WALK
 walkMaxLbl.TextSize                = 8
 walkMaxLbl.Font                    = Enum.Font.Gotham
 walkMaxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
