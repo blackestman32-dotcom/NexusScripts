@@ -619,8 +619,30 @@ local function createTab(name, title, positionScale)
     button.ZIndex             = 12
     button.Parent             = tabBar
     Instance.new("UICorner", button).CornerRadius = UDim.new(0, 7)
+
+    local function animateTabButton()
+        local baseColor = button.BackgroundColor3
+        local baseSize = button.TextSize
+        local highlightColor = baseColor:Lerp(Color3.fromRGB(95, 165, 255), 0.35)
+
+        local downTween = TweenService:Create(button, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            TextSize = baseSize + 2,
+            BackgroundColor3 = highlightColor,
+        })
+        local upTween = TweenService:Create(button, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+            TextSize = baseSize,
+            BackgroundColor3 = baseColor,
+        })
+
+        downTween:Play()
+        downTween.Completed:Connect(function()
+            upTween:Play()
+        end)
+    end
+
     button.MouseButton1Click:Connect(function()
         setActiveTab(name)
+        animateTabButton()
     end)
     return button
 end
