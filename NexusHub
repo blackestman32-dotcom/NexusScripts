@@ -1,5 +1,5 @@
 -- ================================================
---   Universal Fly Script v3
+--   Nexus Hub UI
 --   LocalScript → StarterPlayerScripts
 -- ================================================
 
@@ -40,7 +40,7 @@ end
 --  SCREEN GUI ROOT
 -- ================================================
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name            = "FlyGui"
+screenGui.Name            = "NexusHub"
 screenGui.ResetOnSpawn    = false
 screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
 screenGui.IgnoreGuiInset  = true
@@ -184,7 +184,7 @@ local loadTitle = Instance.new("TextLabel")
 loadTitle.Size                   = UDim2.new(0, 340, 0, 34)
 loadTitle.Position               = UDim2.new(0.5, -170, 0.5, 14)
 loadTitle.BackgroundTransparency = 1
-loadTitle.Text                   = "FLY SCRIPT"
+loadTitle.Text                   = "Nexus Hub"
 loadTitle.TextSize                = 28
 loadTitle.Font                    = Enum.Font.GothamBold
 loadTitle.TextColor3              = Color3.fromRGB(215, 230, 255)
@@ -510,7 +510,7 @@ local headerLbl = Instance.new("TextLabel")
 headerLbl.Size                   = UDim2.new(1, -70, 1, 0)
 headerLbl.Position               = UDim2.new(0, 30, 0, 0)
 headerLbl.BackgroundTransparency = 1
-headerLbl.Text                   = "FLY SCRIPT"
+headerLbl.Text                   = "Nexus Hub"
 headerLbl.TextSize                = 11
 headerLbl.Font                    = Enum.Font.GothamBold
 headerLbl.TextColor3              = Color3.fromRGB(90, 155, 255)
@@ -1018,7 +1018,7 @@ local infoLbl = Instance.new("TextLabel")
 infoLbl.Size                   = UDim2.new(1, -14, 0, 15)
 infoLbl.Position               = UDim2.new(0, 8, 0, 292)
 infoLbl.BackgroundTransparency = 1
-infoLbl.Text                   = "Universal Fly Script  •  v3.0"
+infoLbl.Text                   = "Nexus Hub  •  v3.0"
 infoLbl.TextSize                = 8
 infoLbl.Font                    = Enum.Font.Gotham
 infoLbl.TextColor3              = Color3.fromRGB(38, 55, 100)
