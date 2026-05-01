@@ -456,8 +456,8 @@ end)
 -- ================================================
 
 -- Panel dimensions
-local PANEL_W     = 360
-local PANEL_H_FULL = 530
+local PANEL_W     = 340
+local PANEL_H_FULL = 480
 
 local panel = Instance.new("Frame")
 panel.Name             = "Panel"
@@ -469,22 +469,22 @@ panel.Active           = true
 panel.Draggable        = false
 panel.ZIndex           = 10
 panel.Parent           = screenGui
-Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 8)
 
 local panelStroke = Instance.new("UIStroke")
-panelStroke.Color     = Color3.fromRGB(35, 70, 155)
-panelStroke.Thickness = 1
+panelStroke.Color     = Color3.fromRGB(40, 80, 170)
+panelStroke.Thickness = 1.5
 panelStroke.Parent    = panel
 
 -- ── HEADER ───────────────────────────────────────
 local header = Instance.new("Frame")
-header.Size             = UDim2.new(1, 0, 0, 34)
+header.Size             = UDim2.new(1, 0, 0, 28)
 header.BackgroundColor3 = Color3.fromRGB(23, 30, 50)
 header.BorderSizePixel  = 0
 header.ZIndex           = 11
 header.Parent           = panel
 header.Active          = true
-Instance.new("UICorner", header).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 8)
 
 -- square fix bottom of header
 local hFix = Instance.new("Frame")
@@ -511,7 +511,7 @@ headerLbl.Size                   = UDim2.new(1, -70, 1, 0)
 headerLbl.Position               = UDim2.new(0, 30, 0, 0)
 headerLbl.BackgroundTransparency = 1
 headerLbl.Text                   = "Nexus Hub"
-headerLbl.TextSize                = 11
+headerLbl.TextSize                = 10
 headerLbl.Font                    = Enum.Font.GothamBold
 headerLbl.TextColor3              = Color3.fromRGB(90, 155, 255)
 headerLbl.TextXAlignment          = Enum.TextXAlignment.Left
@@ -519,34 +519,34 @@ headerLbl.ZIndex                  = 12
 headerLbl.Parent                  = header
 
 local statusDot = Instance.new("Frame")
-statusDot.Size             = UDim2.new(0, 7, 0, 7)
-statusDot.Position         = UDim2.new(1, -40, 0.5, -3)
-statusDot.BackgroundColor3 = Color3.fromRGB(50, 60, 110)
+statusDot.Size             = UDim2.new(0, 6, 0, 6)
+statusDot.Position         = UDim2.new(1, -36, 0.5, -3)
+statusDot.BackgroundColor3 = Color3.fromRGB(70, 90, 150)
 statusDot.BorderSizePixel  = 0
 statusDot.ZIndex           = 13
 statusDot.Parent           = header
 Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
 
 local minBtn = Instance.new("TextButton")
-minBtn.Size             = UDim2.new(0, 20, 0, 20)
-minBtn.Position         = UDim2.new(1, -52, 0.5, -10)
+minBtn.Size             = UDim2.new(0, 18, 0, 18)
+minBtn.Position         = UDim2.new(1, -48, 0.5, -9)
 minBtn.BackgroundColor3 = Color3.fromRGB(24, 28, 50)
 minBtn.BorderSizePixel  = 0
 minBtn.Text             = "−"
-minBtn.TextSize          = 13
+minBtn.TextSize          = 12
 minBtn.Font              = Enum.Font.GothamBold
-minBtn.TextColor3        = Color3.fromRGB(190, 215, 255)
+minBtn.TextColor3        = Color3.fromRGB(130, 180, 255)
 minBtn.ZIndex           = 14
 minBtn.Parent           = header
 Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size             = UDim2.new(0, 20, 0, 20)
-closeBtn.Position         = UDim2.new(1, -26, 0.5, -10)
+closeBtn.Size             = UDim2.new(0, 18, 0, 18)
+closeBtn.Position         = UDim2.new(1, -24, 0.5, -9)
 closeBtn.BackgroundColor3 = Color3.fromRGB(190, 45, 45)
 closeBtn.BorderSizePixel  = 0
 closeBtn.Text             = "✕"
-closeBtn.TextSize          = 13
+closeBtn.TextSize          = 12
 closeBtn.Font              = Enum.Font.GothamBold
 closeBtn.TextColor3        = Color3.fromRGB(255, 255, 255)
 closeBtn.ZIndex           = 14
@@ -555,17 +555,17 @@ Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
 -- ── CONTENT AREA ─────────────────────────────────
 local tabBar = Instance.new("Frame")
-tabBar.Size             = UDim2.new(1, -14, 0, 30)
-tabBar.Position         = UDim2.new(0, 7, 0, 34)
+tabBar.Size             = UDim2.new(1, -10, 0, 26)
+tabBar.Position         = UDim2.new(0, 5, 0, 28)
 tabBar.BackgroundColor3 = Color3.fromRGB(15, 20, 35)
 tabBar.BorderSizePixel  = 0
 tabBar.ZIndex           = 11
 tabBar.Parent           = panel
-Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 5)
 
 local content = Instance.new("Frame")
-content.Size                  = UDim2.new(1, 0, 1, -64)
-content.Position              = UDim2.new(0, 0, 0, 64)
+content.Size                  = UDim2.new(1, 0, 1, -54)
+content.Position              = UDim2.new(0, 0, 0, 54)
 content.BackgroundTransparency = 1
 content.ClipsDescendants      = true
 content.ZIndex                = 11
@@ -614,22 +614,22 @@ local function createTab(name, title, positionScale)
     button.BorderSizePixel    = 0
     button.Text               = title
     button.Font               = Enum.Font.GothamBold
-    button.TextSize           = 11
+    button.TextSize           = 9
     button.TextColor3         = Color3.fromRGB(170, 190, 230)
     button.ZIndex             = 12
     button.Parent             = tabBar
-    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 7)
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 5)
 
     local function animateTabButton()
         local baseColor = button.BackgroundColor3
         local baseSize = button.TextSize
-        local highlightColor = baseColor:Lerp(Color3.fromRGB(95, 165, 255), 0.35)
+        local highlightColor = baseColor:Lerp(Color3.fromRGB(100, 170, 255), 0.4)
 
-        local downTween = TweenService:Create(button, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-            TextSize = baseSize + 2,
+        local downTween = TweenService:Create(button, TweenInfo.new(0.08, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            TextSize = baseSize + 1,
             BackgroundColor3 = highlightColor,
         })
-        local upTween = TweenService:Create(button, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+        local upTween = TweenService:Create(button, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
             TextSize = baseSize,
             BackgroundColor3 = baseColor,
         })
@@ -657,7 +657,7 @@ setActiveTab("flight")
 -- Helper: create a category section header
 local function makeSection(parent, yPos, icon, title)
     local sec = Instance.new("Frame")
-    sec.Size                  = UDim2.new(1, 0, 0, 20)
+    sec.Size                  = UDim2.new(1, 0, 0, 18)
     sec.Position              = UDim2.new(0, 0, 0, yPos)
     sec.BackgroundColor3      = Color3.fromRGB(14, 17, 30)
     sec.BackgroundTransparency = 0
@@ -666,33 +666,33 @@ local function makeSection(parent, yPos, icon, title)
     sec.Parent                = parent
 
     local accent = Instance.new("Frame")
-    accent.Size             = UDim2.new(0, 2, 0, 12)
-    accent.Position         = UDim2.new(0, 7, 0.5, -6)
-    accent.BackgroundColor3 = Color3.fromRGB(45, 105, 235)
+    accent.Size             = UDim2.new(0, 2, 0, 10)
+    accent.Position         = UDim2.new(0, 5, 0.5, -5)
+    accent.BackgroundColor3 = Color3.fromRGB(60, 130, 255)
     accent.BorderSizePixel  = 0
     accent.ZIndex           = 13
     accent.Parent           = sec
     Instance.new("UICorner", accent).CornerRadius = UDim.new(1, 0)
 
     local icn = Instance.new("TextLabel")
-    icn.Size                   = UDim2.new(0, 16, 1, 0)
-    icn.Position               = UDim2.new(0, 14, 0, 0)
+    icn.Size                   = UDim2.new(0, 14, 1, 0)
+    icn.Position               = UDim2.new(0, 11, 0, 0)
     icn.BackgroundTransparency = 1
     icn.Text                   = icon
-    icn.TextSize                = 9
+    icn.TextSize                = 8
     icn.Font                    = Enum.Font.GothamBold
-    icn.TextColor3              = Color3.fromRGB(65, 120, 220)
+    icn.TextColor3              = Color3.fromRGB(80, 140, 240)
     icn.ZIndex                  = 13
     icn.Parent                  = sec
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size                   = UDim2.new(1, -34, 1, 0)
-    lbl.Position               = UDim2.new(0, 30, 0, 0)
+    lbl.Size                   = UDim2.new(1, -28, 1, 0)
+    lbl.Position               = UDim2.new(0, 27, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text                   = title
-    lbl.TextSize                = 9
+    lbl.TextSize                = 8
     lbl.Font                    = Enum.Font.GothamBold
-    lbl.TextColor3              = Color3.fromRGB(55, 85, 160)
+    lbl.TextColor3              = Color3.fromRGB(80, 120, 200)
     lbl.TextXAlignment          = Enum.TextXAlignment.Left
     lbl.ZIndex                  = 13
     lbl.Parent                  = sec
@@ -707,22 +707,22 @@ makeSection(flightPage, 6, "▶", "FLIGHT CONTROL")
 
 -- Fly toggle button
 local flyBtn = Instance.new("TextButton")
-flyBtn.Size             = UDim2.new(1, -14, 0, 32)
-flyBtn.Position         = UDim2.new(0, 7, 0, 30)
+flyBtn.Size             = UDim2.new(1, -10, 0, 28)
+flyBtn.Position         = UDim2.new(0, 5, 0, 26)
 flyBtn.BackgroundColor3 = Color3.fromRGB(22, 96, 205)
 flyBtn.BorderSizePixel  = 0
 flyBtn.Text             = "▶  START FLYING"
-flyBtn.TextSize          = 11
+flyBtn.TextSize          = 10
 flyBtn.Font              = Enum.Font.GothamBold
 flyBtn.TextColor3        = Color3.fromRGB(255, 255, 255)
 flyBtn.ZIndex           = 12
 flyBtn.Parent           = flightPage
-Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 5)
 
 -- Status row
 local statusRow = Instance.new("Frame")
-statusRow.Size                  = UDim2.new(1, -14, 0, 18)
-statusRow.Position              = UDim2.new(0, 7, 0, 66)
+statusRow.Size                  = UDim2.new(1, -10, 0, 16)
+statusRow.Position              = UDim2.new(0, 5, 0, 56)
 statusRow.BackgroundTransparency = 1
 statusRow.ZIndex                = 12
 statusRow.Parent                = flightPage
@@ -731,9 +731,9 @@ local statusLbl = Instance.new("TextLabel")
 statusLbl.Size                   = UDim2.new(0.5, 0, 1, 0)
 statusLbl.BackgroundTransparency = 1
 statusLbl.Text                   = "Status"
-statusLbl.TextSize                = 9
+statusLbl.TextSize                = 8
 statusLbl.Font                    = Enum.Font.Gotham
-statusLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+statusLbl.TextColor3              = Color3.fromRGB(70, 90, 150)
 statusLbl.TextXAlignment          = Enum.TextXAlignment.Left
 statusLbl.ZIndex                  = 13
 statusLbl.Parent                  = statusRow
@@ -743,45 +743,45 @@ statusVal.Size                   = UDim2.new(0.5, 0, 1, 0)
 statusVal.Position               = UDim2.new(0.5, 0, 0, 0)
 statusVal.BackgroundTransparency = 1
 statusVal.Text                   = "Idle"
-statusVal.TextSize                = 9
+statusVal.TextSize                = 8
 statusVal.Font                    = Enum.Font.GothamBold
-statusVal.TextColor3              = Color3.fromRGB(60, 75, 140)
+statusVal.TextColor3              = Color3.fromRGB(120, 160, 255)
 statusVal.TextXAlignment          = Enum.TextXAlignment.Right
 statusVal.ZIndex                  = 13
 statusVal.Parent                  = statusRow
 
 -- Fly speed section
-makeSection(flightPage, 108, "⚡", "FLY SPEED")
+makeSection(flightPage, 80, "⚡", "FLY SPEED")
 
 local speedLbl = Instance.new("TextLabel")
-speedLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
-speedLbl.Position               = UDim2.new(0, 8, 0, 112)
+speedLbl.Size                   = UDim2.new(0.55, 0, 0, 14)
+speedLbl.Position               = UDim2.new(0, 5, 0, 84)
 speedLbl.BackgroundTransparency = 1
 speedLbl.Text                   = "Fly Speed"
-speedLbl.TextSize                = 9
+speedLbl.TextSize                = 8
 speedLbl.Font                    = Enum.Font.Gotham
-speedLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+speedLbl.TextColor3              = Color3.fromRGB(70, 90, 150)
 speedLbl.TextXAlignment          = Enum.TextXAlignment.Left
 speedLbl.ZIndex                  = 12
 speedLbl.Parent                  = flightPage
 
 local speedVal = Instance.new("TextBox")
-speedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
-speedVal.Position               = UDim2.new(0.55, 0, 0, 112)
+speedVal.Size                   = UDim2.new(0.45, -6, 0, 14)
+speedVal.Position               = UDim2.new(0.55, 0, 0, 84)
 speedVal.BackgroundTransparency = 0.9
 speedVal.Text                   = tostring(flySpeed)
-speedVal.TextSize                = 10
+speedVal.TextSize                = 9
 speedVal.Font                    = Enum.Font.GothamBold
-speedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
+speedVal.TextColor3              = Color3.fromRGB(140, 190, 255)
 speedVal.TextXAlignment          = Enum.TextXAlignment.Right
 speedVal.ClearTextOnFocus        = false
 speedVal.ZIndex                  = 12
 speedVal.Parent                  = flightPage
 
 local track = Instance.new("Frame")
-track.Size             = UDim2.new(1, -14, 0, 6)
-track.Position         = UDim2.new(0, 7, 0, 131)
-track.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
+track.Size             = UDim2.new(1, -10, 0, 5)
+track.Position         = UDim2.new(0, 5, 0, 102)
+track.BackgroundColor3 = Color3.fromRGB(20, 26, 48)
 track.BorderSizePixel  = 0
 track.ZIndex           = 12
 track.Parent           = flightPage
@@ -791,37 +791,37 @@ local initPct = (flySpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
 
 local fill = Instance.new("Frame")
 fill.Size             = UDim2.new(initPct, 0, 1, 0)
-fill.BackgroundColor3 = Color3.fromRGB(38, 115, 235)
+fill.BackgroundColor3 = Color3.fromRGB(50, 130, 255)
 fill.BorderSizePixel  = 0
 fill.ZIndex           = 13
 fill.Parent           = track
 Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
 
 local knob = Instance.new("Frame")
-knob.Size             = UDim2.new(0, 14, 0, 14)
+knob.Size             = UDim2.new(0, 12, 0, 12)
 knob.AnchorPoint      = Vector2.new(0.5, 0.5)
 knob.Position         = UDim2.new(initPct, 0, 0.5, 0)
-knob.BackgroundColor3 = Color3.fromRGB(190, 215, 255)
+knob.BackgroundColor3 = Color3.fromRGB(200, 220, 255)
 knob.BorderSizePixel  = 0
 knob.ZIndex           = 14
 knob.Parent           = track
 Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
 local minLbl = Instance.new("TextLabel")
-minLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
-minLbl.Position               = UDim2.new(0, 8, 0, 141)
+minLbl.Size                   = UDim2.new(0.5, 0, 0, 11)
+minLbl.Position               = UDim2.new(0, 5, 0, 109)
 minLbl.BackgroundTransparency = 1
 minLbl.Text                   = "Min: " .. MIN_SPEED
-minLbl.TextSize                = 8
+minLbl.TextSize                = 7
 minLbl.Font                    = Enum.Font.Gotham
-minLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+minLbl.TextColor3              = Color3.fromRGB(50, 70, 130)
 minLbl.TextXAlignment          = Enum.TextXAlignment.Left
 minLbl.ZIndex                  = 12
 minLbl.Parent                  = flightPage
 
 local maxLbl = Instance.new("TextLabel")
-maxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
-maxLbl.Position               = UDim2.new(0.5, 0, 0, 141)
+maxLbl.Size                   = UDim2.new(0.5, -6, 0, 12)
+maxLbl.Position               = UDim2.new(0.5, 0, 0, 111)
 maxLbl.BackgroundTransparency = 1
 maxLbl.Text                   = "Max: " .. MAX_SPEED
 maxLbl.TextSize                = 8
@@ -833,8 +833,9 @@ maxLbl.Parent                  = flightPage
 
 -- Divider
 local div1 = Instance.new("Frame")
-div1.Size             = UDim2.new(1, -14, 0, 1)
-div1.Position         = UDim2.new(0, 7, 0, 160)
+div1.Size             = UDim2.new(1, -10, 0, 1)
+div1.Position         = UDim2.new(0, 5, 0, 125)
+div1.BackgroundColor3 = Color3.fromRGB(25, 32, 56)
 div1.ZIndex           = 12
 div1.Parent           = flightPage
 
@@ -844,34 +845,34 @@ div1.Parent           = flightPage
 makeSection(speedPage, 6, "⚡", "WALKSPEED")
 
 local walkLbl = Instance.new("TextLabel")
-walkLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
-walkLbl.Position               = UDim2.new(0, 8, 0, 118)
+walkLbl.Size                   = UDim2.new(0.55, 0, 0, 14)
+walkLbl.Position               = UDim2.new(0, 5, 0, 90)
 walkLbl.BackgroundTransparency = 1
 walkLbl.Text                   = "Walk Speed"
-walkLbl.TextSize                = 9
+walkLbl.TextSize                = 8
 walkLbl.Font                    = Enum.Font.Gotham
-walkLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+walkLbl.TextColor3              = Color3.fromRGB(70, 90, 150)
 walkLbl.TextXAlignment          = Enum.TextXAlignment.Left
 walkLbl.ZIndex                  = 12
 walkLbl.Parent                  = speedPage
 
 local walkSpeedVal = Instance.new("TextBox")
-walkSpeedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
-walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 118)
+walkSpeedVal.Size                   = UDim2.new(0.45, -6, 0, 14)
+walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 90)
 walkSpeedVal.BackgroundTransparency = 0.9
 walkSpeedVal.Text                   = tostring(walkSpeed)
-walkSpeedVal.TextSize                = 10
+walkSpeedVal.TextSize                = 9
 walkSpeedVal.Font                    = Enum.Font.GothamBold
-walkSpeedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
+walkSpeedVal.TextColor3              = Color3.fromRGB(140, 190, 255)
 walkSpeedVal.TextXAlignment          = Enum.TextXAlignment.Right
 walkSpeedVal.ClearTextOnFocus        = false
 walkSpeedVal.ZIndex                  = 12
 walkSpeedVal.Parent                  = speedPage
 
 local walkTrack = Instance.new("Frame")
-walkTrack.Size             = UDim2.new(1, -14, 0, 6)
-walkTrack.Position         = UDim2.new(0, 7, 0, 137)
-walkTrack.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
+walkTrack.Size             = UDim2.new(1, -10, 0, 5)
+walkTrack.Position         = UDim2.new(0, 5, 0, 108)
+walkTrack.BackgroundColor3 = Color3.fromRGB(20, 26, 48)
 walkTrack.BorderSizePixel  = 0
 walkTrack.ZIndex           = 12
 walkTrack.Parent           = speedPage
@@ -881,51 +882,51 @@ local initWalkPct = (walkSpeed - MIN_WALK) / (MAX_WALK - MIN_WALK)
 
 local walkFill = Instance.new("Frame")
 walkFill.Size             = UDim2.new(initWalkPct, 0, 1, 0)
-walkFill.BackgroundColor3 = Color3.fromRGB(38, 115, 235)
+walkFill.BackgroundColor3 = Color3.fromRGB(50, 130, 255)
 walkFill.BorderSizePixel  = 0
 walkFill.ZIndex           = 13
 walkFill.Parent           = walkTrack
 Instance.new("UICorner", walkFill).CornerRadius = UDim.new(1, 0)
 
 local walkKnob = Instance.new("Frame")
-walkKnob.Size             = UDim2.new(0, 14, 0, 14)
+walkKnob.Size             = UDim2.new(0, 12, 0, 12)
 walkKnob.AnchorPoint      = Vector2.new(0.5, 0.5)
 walkKnob.Position         = UDim2.new(initWalkPct, 0, 0.5, 0)
-walkKnob.BackgroundColor3 = Color3.fromRGB(190, 215, 255)
+walkKnob.BackgroundColor3 = Color3.fromRGB(200, 220, 255)
 walkKnob.BorderSizePixel  = 0
 walkKnob.ZIndex           = 14
 walkKnob.Parent           = walkTrack
 Instance.new("UICorner", walkKnob).CornerRadius = UDim.new(1, 0)
 
 local walkMinLbl = Instance.new("TextLabel")
-walkMinLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
-walkMinLbl.Position               = UDim2.new(0, 8, 0, 147)
+walkMinLbl.Size                   = UDim2.new(0.5, 0, 0, 11)
+walkMinLbl.Position               = UDim2.new(0, 5, 0, 115)
 walkMinLbl.BackgroundTransparency = 1
 walkMinLbl.Text                   = "Min: " .. MIN_WALK
-walkMinLbl.TextSize                = 8
+walkMinLbl.TextSize                = 7
 walkMinLbl.Font                    = Enum.Font.Gotham
-walkMinLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+walkMinLbl.TextColor3              = Color3.fromRGB(50, 70, 130)
 walkMinLbl.TextXAlignment          = Enum.TextXAlignment.Left
 walkMinLbl.ZIndex                  = 12
 walkMinLbl.Parent                  = speedPage
 
 local walkMaxLbl = Instance.new("TextLabel")
-walkMaxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
-walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 147)
+walkMaxLbl.Size                   = UDim2.new(0.5, -6, 0, 11)
+walkMaxLbl.Position               = UDim2.new(0.5, 0, 0, 115)
 walkMaxLbl.BackgroundTransparency = 1
-walkMaxLbl.Text                   = "Max: " .. MIN_WALK
-walkMaxLbl.TextSize                = 8
+walkMaxLbl.Text                   = "Max: " .. MAX_WALK
+walkMaxLbl.TextSize                = 7
 walkMaxLbl.Font                    = Enum.Font.Gotham
-walkMaxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+walkMaxLbl.TextColor3              = Color3.fromRGB(50, 70, 130)
 walkMaxLbl.TextXAlignment          = Enum.TextXAlignment.Right
 walkMaxLbl.ZIndex                  = 12
 walkMaxLbl.Parent                  = speedPage
 
 -- Divider
 local div2 = Instance.new("Frame")
-div2.Size             = UDim2.new(1, -14, 0, 1)
-div2.Position         = UDim2.new(0, 7, 0, 176)
-div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+div2.Size             = UDim2.new(1, -10, 0, 1)
+div2.Position         = UDim2.new(0, 5, 0, 131)
+div2.BackgroundColor3 = Color3.fromRGB(25, 32, 56)
 div2.BorderSizePixel  = 0
 div2.ZIndex           = 12
 div2.Parent           = speedPage
@@ -1022,9 +1023,9 @@ makeBindRow(300, "L-Shift", "Descend")
 
 -- Divider
 local div3 = Instance.new("Frame")
-div3.Size             = UDim2.new(1, -14, 0, 1)
-div3.Position         = UDim2.new(0, 7, 0, 320)
-div3.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+div3.Size             = UDim2.new(1, -10, 0, 1)
+div3.Position         = UDim2.new(0, 5, 0, 320)
+div3.BackgroundColor3 = Color3.fromRGB(25, 32, 56)
 div3.BorderSizePixel  = 0
 div3.ZIndex           = 12
 div3.Parent           = keybindsPage
@@ -1035,13 +1036,13 @@ div3.Parent           = keybindsPage
 makeSection(infoPage, 6, "ℹ", "INFO")
 
 local infoLbl = Instance.new("TextLabel")
-infoLbl.Size                   = UDim2.new(1, -14, 0, 15)
-infoLbl.Position               = UDim2.new(0, 8, 0, 292)
+infoLbl.Size                   = UDim2.new(1, -10, 0, 14)
+infoLbl.Position               = UDim2.new(0, 5, 0, 26)
 infoLbl.BackgroundTransparency = 1
 infoLbl.Text                   = "Nexus Hub  •  v3.0"
 infoLbl.TextSize                = 8
 infoLbl.Font                    = Enum.Font.Gotham
-infoLbl.TextColor3              = Color3.fromRGB(38, 55, 100)
+infoLbl.TextColor3              = Color3.fromRGB(60, 80, 130)
 infoLbl.TextXAlignment          = Enum.TextXAlignment.Left
 infoLbl.ZIndex                  = 12
 infoLbl.Parent                  = infoPage
