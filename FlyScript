@@ -462,8 +462,8 @@ local PANEL_H_FULL = 380
 local panel = Instance.new("Frame")
 panel.Name             = "Panel"
 panel.Size             = UDim2.new(0, PANEL_W, 0, PANEL_H_FULL)
-panel.Position         = UDim2.new(1, -(PANEL_W + 18), 0, 18)
-panel.BackgroundColor3 = Color3.fromRGB(9, 10, 17)
+panel.Position         = UDim2.new(0.5, -PANEL_W/2, 0.5, -PANEL_H_FULL/2)
+panel.BackgroundColor3 = Color3.fromRGB(12, 16, 28)
 panel.BorderSizePixel  = 0
 panel.Active           = true
 panel.Draggable        = true
@@ -479,7 +479,7 @@ panelStroke.Parent    = panel
 -- ── HEADER ───────────────────────────────────────
 local header = Instance.new("Frame")
 header.Size             = UDim2.new(1, 0, 0, 34)
-header.BackgroundColor3 = Color3.fromRGB(13, 15, 26)
+header.BackgroundColor3 = Color3.fromRGB(23, 30, 50)
 header.BorderSizePixel  = 0
 header.ZIndex           = 11
 header.Parent           = panel
@@ -528,16 +528,29 @@ Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
 
 local minBtn = Instance.new("TextButton")
 minBtn.Size             = UDim2.new(0, 20, 0, 20)
-minBtn.Position         = UDim2.new(1, -26, 0.5, -10)
+minBtn.Position         = UDim2.new(1, -52, 0.5, -10)
 minBtn.BackgroundColor3 = Color3.fromRGB(24, 28, 50)
 minBtn.BorderSizePixel  = 0
 minBtn.Text             = "−"
 minBtn.TextSize          = 13
 minBtn.Font              = Enum.Font.GothamBold
-minBtn.TextColor3        = Color3.fromRGB(90, 110, 185)
+minBtn.TextColor3        = Color3.fromRGB(190, 215, 255)
 minBtn.ZIndex           = 14
 minBtn.Parent           = header
 Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size             = UDim2.new(0, 20, 0, 20)
+closeBtn.Position         = UDim2.new(1, -26, 0.5, -10)
+closeBtn.BackgroundColor3 = Color3.fromRGB(190, 45, 45)
+closeBtn.BorderSizePixel  = 0
+closeBtn.Text             = "✕"
+closeBtn.TextSize          = 13
+closeBtn.Font              = Enum.Font.GothamBold
+closeBtn.TextColor3        = Color3.fromRGB(255, 255, 255)
+closeBtn.ZIndex           = 14
+closeBtn.Parent           = header
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
 -- ── CONTENT AREA ─────────────────────────────────
 local content = Instance.new("Frame")
@@ -671,15 +684,16 @@ speedLbl.TextXAlignment          = Enum.TextXAlignment.Left
 speedLbl.ZIndex                  = 12
 speedLbl.Parent                  = content
 
-local speedVal = Instance.new("TextLabel")
+local speedVal = Instance.new("TextBox")
 speedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
 speedVal.Position               = UDim2.new(0.55, 0, 0, 118)
-speedVal.BackgroundTransparency = 1
+speedVal.BackgroundTransparency = 0.9
 speedVal.Text                   = tostring(flySpeed)
 speedVal.TextSize                = 10
 speedVal.Font                    = Enum.Font.GothamBold
 speedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
 speedVal.TextXAlignment          = Enum.TextXAlignment.Right
+speedVal.ClearTextOnFocus        = false
 speedVal.ZIndex                  = 12
 speedVal.Parent                  = content
 
@@ -750,15 +764,16 @@ walkLbl.TextXAlignment          = Enum.TextXAlignment.Left
 walkLbl.ZIndex                  = 12
 walkLbl.Parent                  = content
 
-local walkSpeedVal = Instance.new("TextLabel")
+local walkSpeedVal = Instance.new("TextBox")
 walkSpeedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
 walkSpeedVal.Position               = UDim2.new(0.55, 0, 0, 168)
-walkSpeedVal.BackgroundTransparency = 1
+walkSpeedVal.BackgroundTransparency = 0.9
 walkSpeedVal.Text                   = tostring(walkSpeed)
 walkSpeedVal.TextSize                = 10
 walkSpeedVal.Font                    = Enum.Font.GothamBold
 walkSpeedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
 walkSpeedVal.TextXAlignment          = Enum.TextXAlignment.Right
+walkSpeedVal.ClearTextOnFocus        = false
 walkSpeedVal.ZIndex                  = 12
 walkSpeedVal.Parent                  = content
 
@@ -823,6 +838,41 @@ div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
 div2.BorderSizePixel  = 0
 div2.ZIndex           = 12
 div2.Parent           = content
+
+local function clampFlySpeed(text)
+    local value = tonumber(text)
+    if not value then
+        speedVal.Text = tostring(flySpeed)
+        return
+    end
+    flySpeed = math.clamp(math.floor(value), MIN_SPEED, MAX_SPEED)
+    local pct = (flySpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
+    fill.Size     = UDim2.new(pct, 0, 1, 0)
+    knob.Position = UDim2.new(pct, 0, 0.5, 0)
+    speedVal.Text = tostring(flySpeed)
+end
+
+local function clampWalkSpeed(text)
+    local value = tonumber(text)
+    if not value then
+        walkSpeedVal.Text = tostring(walkSpeed)
+        return
+    end
+    walkSpeed = math.clamp(math.floor(value), MIN_WALK, MAX_WALK)
+    local pct = (walkSpeed - MIN_WALK) / (MAX_WALK - MIN_WALK)
+    walkFill.Size      = UDim2.new(pct, 0, 1, 0)
+    walkKnob.Position  = UDim2.new(pct, 0, 0.5, 0)
+    walkSpeedVal.Text  = tostring(walkSpeed)
+    if not flying then applyWalkSpeed() end
+end
+
+speedVal.FocusLost:Connect(function()
+    clampFlySpeed(speedVal.Text)
+end)
+
+walkSpeedVal.FocusLost:Connect(function()
+    clampWalkSpeed(walkSpeedVal.Text)
+end)
 
 -- ════════════════════════════════════════════════
 --  CATEGORY 3: KEYBINDS  (y = 168)
@@ -1087,6 +1137,16 @@ end
 --  INTERACTIONS
 -- ================================================
 flyBtn.MouseButton1Click:Connect(toggleFly)
+closeBtn.MouseButton1Click:Connect(function()
+    if flying then
+        disableFly()
+        flying = false
+        setVisuals(false)
+    end
+    if screenGui and screenGui.Parent then
+        screenGui:Destroy()
+    end
+end)
 
 flyBtn.MouseEnter:Connect(function()
     TweenService:Create(flyBtn, tweenEase, {BackgroundTransparency = 0.18}):Play()
