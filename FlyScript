@@ -1,0 +1,980 @@
+-- ================================================
+--   Universal Fly Script v3
+--   LocalScript → StarterPlayerScripts
+-- ================================================
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService     = game:GetService("TweenService")
+local tweenEase        = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- ================================================
+--  FLY STATE
+-- ================================================
+local flying      = false
+local flySpeed    = 60
+local bodyVelocity, bodyGyro, flyConnection
+
+local MIN_SPEED = 10
+local MAX_SPEED = 250
+
+-- ================================================
+--  SCREEN GUI ROOT
+-- ================================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name            = "FlyGui"
+screenGui.ResetOnSpawn    = false
+screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+screenGui.IgnoreGuiInset  = true
+screenGui.Parent          = player.PlayerGui
+
+-- ================================================
+--  LOADING SCREEN  (longer, more dramatic)
+-- ================================================
+local loadFrame = Instance.new("Frame")
+loadFrame.Size              = UDim2.fromScale(1, 1)
+loadFrame.BackgroundColor3  = Color3.fromRGB(5, 6, 12)
+loadFrame.BorderSizePixel   = 0
+loadFrame.ZIndex            = 100
+loadFrame.Parent            = screenGui
+
+-- Background grid lines (aesthetic detail)
+for i = 1, 8 do
+    local gridLine = Instance.new("Frame")
+    gridLine.Size             = UDim2.new(1, 0, 0, 1)
+    gridLine.Position         = UDim2.new(0, 0, i / 9, 0)
+    gridLine.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+    gridLine.BorderSizePixel  = 0
+    gridLine.ZIndex           = 100
+    gridLine.Parent           = loadFrame
+end
+for i = 1, 12 do
+    local gridLine = Instance.new("Frame")
+    gridLine.Size             = UDim2.new(0, 1, 1, 0)
+    gridLine.Position         = UDim2.new(i / 13, 0, 0, 0)
+    gridLine.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+    gridLine.BorderSizePixel  = 0
+    gridLine.ZIndex           = 100
+    gridLine.Parent           = loadFrame
+end
+
+-- Corner accent lines (top-left)
+local cornerTL_H = Instance.new("Frame")
+cornerTL_H.Size             = UDim2.new(0, 55, 0, 2)
+cornerTL_H.Position         = UDim2.new(0, 28, 0, 28)
+cornerTL_H.BackgroundColor3 = Color3.fromRGB(40, 100, 230)
+cornerTL_H.BorderSizePixel  = 0
+cornerTL_H.ZIndex           = 101
+cornerTL_H.Parent           = loadFrame
+
+local cornerTL_V = Instance.new("Frame")
+cornerTL_V.Size             = UDim2.new(0, 2, 0, 55)
+cornerTL_V.Position         = UDim2.new(0, 28, 0, 28)
+cornerTL_V.BackgroundColor3 = Color3.fromRGB(40, 100, 230)
+cornerTL_V.BorderSizePixel  = 0
+cornerTL_V.ZIndex           = 101
+cornerTL_V.Parent           = loadFrame
+
+-- Corner accent lines (bottom-right)
+local cornerBR_H = Instance.new("Frame")
+cornerBR_H.Size             = UDim2.new(0, 55, 0, 2)
+cornerBR_H.Position         = UDim2.new(1, -83, 1, -30)
+cornerBR_H.BackgroundColor3 = Color3.fromRGB(40, 100, 230)
+cornerBR_H.BorderSizePixel  = 0
+cornerBR_H.ZIndex           = 101
+cornerBR_H.Parent           = loadFrame
+
+local cornerBR_V = Instance.new("Frame")
+cornerBR_V.Size             = UDim2.new(0, 2, 0, 55)
+cornerBR_V.Position         = UDim2.new(1, -30, 1, -83)
+cornerBR_V.BackgroundColor3 = Color3.fromRGB(40, 100, 230)
+cornerBR_V.BorderSizePixel  = 0
+cornerBR_V.ZIndex           = 101
+cornerBR_V.Parent           = loadFrame
+
+-- Outer spinning ring (large)
+local ringOuter = Instance.new("Frame")
+ringOuter.Size              = UDim2.new(0, 120, 0, 120)
+ringOuter.Position          = UDim2.new(0.5, -60, 0.5, -120)
+ringOuter.BackgroundColor3  = Color3.fromRGB(18, 52, 140)
+ringOuter.BorderSizePixel   = 0
+ringOuter.ZIndex            = 101
+ringOuter.Parent            = loadFrame
+Instance.new("UICorner", ringOuter).CornerRadius = UDim.new(1, 0)
+
+local ringOuterInner = Instance.new("Frame")
+ringOuterInner.Size             = UDim2.new(0, 102, 0, 102)
+ringOuterInner.Position         = UDim2.new(0.5, -51, 0.5, -51)
+ringOuterInner.BackgroundColor3 = Color3.fromRGB(5, 6, 12)
+ringOuterInner.BorderSizePixel  = 0
+ringOuterInner.ZIndex           = 102
+ringOuterInner.Parent           = ringOuter
+Instance.new("UICorner", ringOuterInner).CornerRadius = UDim.new(1, 0)
+
+-- Inner spinning ring (counter-spin)
+local ring = Instance.new("Frame")
+ring.Size              = UDim2.new(0, 88, 0, 88)
+ring.Position          = UDim2.new(0.5, -44, 0.5, -44)
+ring.BackgroundColor3  = Color3.fromRGB(35, 110, 245)
+ring.BorderSizePixel   = 0
+ring.ZIndex            = 103
+ring.Parent            = ringOuter
+Instance.new("UICorner", ring).CornerRadius = UDim.new(1, 0)
+
+local ringInner = Instance.new("Frame")
+ringInner.Size             = UDim2.new(0, 72, 0, 72)
+ringInner.Position         = UDim2.new(0.5, -36, 0.5, -36)
+ringInner.BackgroundColor3 = Color3.fromRGB(5, 6, 12)
+ringInner.BorderSizePixel  = 0
+ringInner.ZIndex           = 104
+ringInner.Parent           = ring
+Instance.new("UICorner", ringInner).CornerRadius = UDim.new(1, 0)
+
+local ringIcon = Instance.new("TextLabel")
+ringIcon.Size                   = UDim2.fromScale(1, 1)
+ringIcon.BackgroundTransparency = 1
+ringIcon.Text                   = "✦"
+ringIcon.TextSize                = 30
+ringIcon.TextColor3              = Color3.fromRGB(100, 165, 255)
+ringIcon.Font                    = Enum.Font.GothamBold
+ringIcon.ZIndex                  = 105
+ringIcon.Parent                  = ringInner
+
+-- Version badge
+local versionBadge = Instance.new("Frame")
+versionBadge.Size             = UDim2.new(0, 68, 0, 18)
+versionBadge.Position         = UDim2.new(0.5, -34, 0, -28)
+versionBadge.BackgroundColor3 = Color3.fromRGB(22, 55, 135)
+versionBadge.BorderSizePixel  = 0
+versionBadge.ZIndex           = 106
+versionBadge.Parent           = ringOuter
+Instance.new("UICorner", versionBadge).CornerRadius = UDim.new(0, 4)
+
+local versionText = Instance.new("TextLabel")
+versionText.Size                   = UDim2.fromScale(1, 1)
+versionText.BackgroundTransparency = 1
+versionText.Text                   = "v3.0"
+versionText.TextSize                = 9
+versionText.Font                    = Enum.Font.GothamBold
+versionText.TextColor3              = Color3.fromRGB(120, 170, 255)
+versionText.TextXAlignment          = Enum.TextXAlignment.Center
+versionText.ZIndex                  = 107
+versionText.Parent                  = versionBadge
+
+-- Title
+local loadTitle = Instance.new("TextLabel")
+loadTitle.Size                   = UDim2.new(0, 340, 0, 34)
+loadTitle.Position               = UDim2.new(0.5, -170, 0.5, 14)
+loadTitle.BackgroundTransparency = 1
+loadTitle.Text                   = "FLY SCRIPT"
+loadTitle.TextSize                = 28
+loadTitle.Font                    = Enum.Font.GothamBold
+loadTitle.TextColor3              = Color3.fromRGB(215, 230, 255)
+loadTitle.TextXAlignment          = Enum.TextXAlignment.Center
+loadTitle.ZIndex                  = 101
+loadTitle.Parent                  = loadFrame
+
+-- Subtitle
+local loadSub = Instance.new("TextLabel")
+loadSub.Size                   = UDim2.new(0, 340, 0, 18)
+loadSub.Position               = UDim2.new(0.5, -170, 0.5, 48)
+loadSub.BackgroundTransparency = 1
+loadSub.Text                   = "Universal Edition  •  v3.0"
+loadSub.TextSize                = 11
+loadSub.Font                    = Enum.Font.Gotham
+loadSub.TextColor3              = Color3.fromRGB(55, 80, 145)
+loadSub.TextXAlignment          = Enum.TextXAlignment.Center
+loadSub.ZIndex                  = 101
+loadSub.Parent                  = loadFrame
+
+-- Separator line
+local sepLine = Instance.new("Frame")
+sepLine.Size             = UDim2.new(0, 180, 0, 1)
+sepLine.Position         = UDim2.new(0.5, -90, 0.5, 72)
+sepLine.BackgroundColor3 = Color3.fromRGB(28, 40, 80)
+sepLine.BorderSizePixel  = 0
+sepLine.ZIndex           = 101
+sepLine.Parent           = loadFrame
+
+-- Stage label (shows current init stage name)
+local stageLabel = Instance.new("TextLabel")
+stageLabel.Size                   = UDim2.new(0, 340, 0, 18)
+stageLabel.Position               = UDim2.new(0.5, -170, 0.5, 80)
+stageLabel.BackgroundTransparency = 1
+stageLabel.Text                   = "INITIALIZING SYSTEM"
+stageLabel.TextSize                = 9
+stageLabel.Font                    = Enum.Font.GothamBold
+stageLabel.TextColor3              = Color3.fromRGB(50, 80, 160)
+stageLabel.TextXAlignment          = Enum.TextXAlignment.Center
+stageLabel.ZIndex                  = 101
+stageLabel.Parent                  = loadFrame
+
+-- Progress bar track
+local barTrack = Instance.new("Frame")
+barTrack.Size             = UDim2.new(0, 260, 0, 5)
+barTrack.Position         = UDim2.new(0.5, -130, 0.5, 104)
+barTrack.BackgroundColor3 = Color3.fromRGB(16, 20, 36)
+barTrack.BorderSizePixel  = 0
+barTrack.ZIndex           = 101
+barTrack.Parent           = loadFrame
+Instance.new("UICorner", barTrack).CornerRadius = UDim.new(1, 0)
+
+local barFill = Instance.new("Frame")
+barFill.Size             = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(50, 130, 255)
+barFill.BorderSizePixel  = 0
+barFill.ZIndex           = 102
+barFill.Parent           = barTrack
+Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+
+-- Progress glow overlay
+local barGlow = Instance.new("Frame")
+barGlow.Size                  = UDim2.new(0, 12, 1, 4)
+barGlow.AnchorPoint           = Vector2.new(1, 0.5)
+barGlow.Position              = UDim2.new(1, 0, 0.5, 0)
+barGlow.BackgroundColor3      = Color3.fromRGB(140, 195, 255)
+barGlow.BackgroundTransparency = 0.4
+barGlow.BorderSizePixel       = 0
+barGlow.ZIndex                = 103
+barGlow.Parent                = barFill
+Instance.new("UICorner", barGlow).CornerRadius = UDim.new(1, 0)
+
+-- Status text
+local loadStatus = Instance.new("TextLabel")
+loadStatus.Size                   = UDim2.new(0, 340, 0, 16)
+loadStatus.Position               = UDim2.new(0.5, -170, 0.5, 115)
+loadStatus.BackgroundTransparency = 1
+loadStatus.Text                   = "Starting up..."
+loadStatus.TextSize                = 10
+loadStatus.Font                    = Enum.Font.Gotham
+loadStatus.TextColor3              = Color3.fromRGB(45, 65, 115)
+loadStatus.TextXAlignment          = Enum.TextXAlignment.Center
+loadStatus.ZIndex                  = 101
+loadStatus.Parent                  = loadFrame
+
+-- System checks list (left side)
+local checkContainer = Instance.new("Frame")
+checkContainer.Size                  = UDim2.new(0, 180, 0, 110)
+checkContainer.Position              = UDim2.new(0.5, -310, 0.5, -55)
+checkContainer.BackgroundColor3      = Color3.fromRGB(10, 12, 22)
+checkContainer.BackgroundTransparency = 0.3
+checkContainer.BorderSizePixel       = 0
+checkContainer.ZIndex                = 101
+checkContainer.Parent                = loadFrame
+Instance.new("UICorner", checkContainer).CornerRadius = UDim.new(0, 8)
+
+local checkStroke = Instance.new("UIStroke")
+checkStroke.Color     = Color3.fromRGB(25, 38, 85)
+checkStroke.Thickness = 1
+checkStroke.Parent    = checkContainer
+
+local checkTitle = Instance.new("TextLabel")
+checkTitle.Size                   = UDim2.new(1, -12, 0, 20)
+checkTitle.Position               = UDim2.new(0, 10, 0, 6)
+checkTitle.BackgroundTransparency = 1
+checkTitle.Text                   = "SYSTEM CHECKS"
+checkTitle.TextSize                = 9
+checkTitle.Font                    = Enum.Font.GothamBold
+checkTitle.TextColor3              = Color3.fromRGB(40, 65, 135)
+checkTitle.TextXAlignment          = Enum.TextXAlignment.Left
+checkTitle.ZIndex                  = 102
+checkTitle.Parent                  = checkContainer
+
+local checkItems = {
+    "Services",
+    "Character",
+    "Physics Engine",
+    "GUI Layer",
+    "Flight Module",
+    "Input Binds",
+}
+local checkLabels = {}
+for i, item in ipairs(checkItems) do
+    local row = Instance.new("Frame")
+    row.Size                  = UDim2.new(1, -20, 0, 13)
+    row.Position              = UDim2.new(0, 10, 0, 22 + (i-1)*14)
+    row.BackgroundTransparency = 1
+    row.ZIndex                = 102
+    row.Parent                = checkContainer
+
+    local dot = Instance.new("Frame")
+    dot.Size             = UDim2.new(0, 6, 0, 6)
+    dot.Position         = UDim2.new(0, 0, 0.5, -3)
+    dot.BackgroundColor3 = Color3.fromRGB(30, 45, 90)
+    dot.BorderSizePixel  = 0
+    dot.ZIndex           = 103
+    dot.Parent           = row
+    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size                   = UDim2.new(1, -14, 1, 0)
+    lbl.Position               = UDim2.new(0, 14, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text                   = item
+    lbl.TextSize                = 9
+    lbl.Font                    = Enum.Font.Gotham
+    lbl.TextColor3              = Color3.fromRGB(40, 58, 115)
+    lbl.TextXAlignment          = Enum.TextXAlignment.Left
+    lbl.ZIndex                  = 103
+    lbl.Parent                  = row
+
+    checkLabels[i] = {dot = dot, lbl = lbl}
+end
+
+-- Info box (right side)
+local infoContainer = Instance.new("Frame")
+infoContainer.Size                  = UDim2.new(0, 180, 0, 110)
+infoContainer.Position              = UDim2.new(0.5, 130, 0.5, -55)
+infoContainer.BackgroundColor3      = Color3.fromRGB(10, 12, 22)
+infoContainer.BackgroundTransparency = 0.3
+infoContainer.BorderSizePixel       = 0
+infoContainer.ZIndex                = 101
+infoContainer.Parent                = loadFrame
+Instance.new("UICorner", infoContainer).CornerRadius = UDim.new(0, 8)
+
+local infoStroke = Instance.new("UIStroke")
+infoStroke.Color     = Color3.fromRGB(25, 38, 85)
+infoStroke.Thickness = 1
+infoStroke.Parent    = infoContainer
+
+local infoTitle = Instance.new("TextLabel")
+infoTitle.Size                   = UDim2.new(1, -12, 0, 20)
+infoTitle.Position               = UDim2.new(0, 10, 0, 6)
+infoTitle.BackgroundTransparency = 1
+infoTitle.Text                   = "FEATURES"
+infoTitle.TextSize                = 9
+infoTitle.Font                    = Enum.Font.GothamBold
+infoTitle.TextColor3              = Color3.fromRGB(40, 65, 135)
+infoTitle.TextXAlignment          = Enum.TextXAlignment.Left
+infoTitle.ZIndex                  = 102
+infoTitle.Parent                  = infoContainer
+
+local featureList = {
+    "✦  Camera-relative flight",
+    "✦  Adjustable speed slider",
+    "✦  [F] hotkey toggle",
+    "✦  Space / Shift vertical",
+    "✦  Smooth BodyGyro align",
+    "✦  Category GUI panel",
+}
+for i, feat in ipairs(featureList) do
+    local lbl = Instance.new("TextLabel")
+    lbl.Size                   = UDim2.new(1, -16, 0, 13)
+    lbl.Position               = UDim2.new(0, 10, 0, 22 + (i-1)*14)
+    lbl.BackgroundTransparency = 1
+    lbl.Text                   = feat
+    lbl.TextSize                = 9
+    lbl.Font                    = Enum.Font.Gotham
+    lbl.TextColor3              = Color3.fromRGB(40, 58, 115)
+    lbl.TextXAlignment          = Enum.TextXAlignment.Left
+    lbl.ZIndex                  = 102
+    lbl.Parent                  = infoContainer
+end
+
+-- Animate loading
+local spinAngle = 0
+local spinConn = RunService.Heartbeat:Connect(function(dt)
+    spinAngle = spinAngle + dt * 140
+    ring.Rotation     = spinAngle
+    ringOuter.Rotation = -spinAngle * 0.45
+end)
+
+-- Loading steps: {wait, barPct, stageText, statusText, checkIndex}
+local loadSteps = {
+    {t = 0.30, pct = 0.10, stage = "LOADING SERVICES",        status = "Binding game services...",           check = 1},
+    {t = 0.40, pct = 0.22, stage = "LOADING CHARACTER",       status = "Waiting for character data...",      check = 2},
+    {t = 0.40, pct = 0.38, stage = "LOADING PHYSICS ENGINE",  status = "Configuring BodyVelocity forces...", check = 3},
+    {t = 0.45, pct = 0.55, stage = "BUILDING GUI",            status = "Constructing interface panels...",   check = 4},
+    {t = 0.50, pct = 0.74, stage = "LOADING FLIGHT MODULE",   status = "Compiling flight routines...",       check = 5},
+    {t = 0.45, pct = 0.90, stage = "BINDING INPUTS",          status = "Registering keybinds & hotkeys...",  check = 6},
+    {t = 0.40, pct = 1.00, stage = "READY",                   status = "All systems operational.",           check = nil},
+}
+
+task.spawn(function()
+    for stepIdx, step in ipairs(loadSteps) do
+        task.wait(step.t)
+
+        TweenService:Create(barFill, TweenInfo.new(0.35, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(step.pct, 0, 1, 0)
+        }):Play()
+
+        stageLabel.Text = step.stage
+        loadStatus.Text = step.status
+
+        -- Light up corresponding check item
+        if step.check then
+            local c = checkLabels[step.check]
+            TweenService:Create(c.dot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 215, 115)}):Play()
+            TweenService:Create(c.lbl, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 210, 140)}):Play()
+        end
+    end
+
+    -- Hold "READY" for a moment so user can see it
+    task.wait(0.6)
+    stageLabel.Text = "LAUNCH"
+    loadStatus.Text = "Welcome. Enjoy your flight."
+    task.wait(0.55)
+
+    spinConn:Disconnect()
+
+    -- Fade out
+    TweenService:Create(loadFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+        BackgroundTransparency = 1
+    }):Play()
+    for _, d in ipairs(loadFrame:GetDescendants()) do
+        if d:IsA("TextLabel") then
+            TweenService:Create(d, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        elseif d:IsA("Frame") then
+            TweenService:Create(d, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        end
+    end
+
+    task.wait(0.55)
+    loadFrame:Destroy()
+end)
+
+-- ================================================
+--  MAIN PANEL (categorized)
+-- ================================================
+
+-- Panel dimensions
+local PANEL_W     = 210
+local PANEL_H_FULL = 300
+
+local panel = Instance.new("Frame")
+panel.Name             = "Panel"
+panel.Size             = UDim2.new(0, PANEL_W, 0, PANEL_H_FULL)
+panel.Position         = UDim2.new(1, -(PANEL_W + 18), 0, 18)
+panel.BackgroundColor3 = Color3.fromRGB(9, 10, 17)
+panel.BorderSizePixel  = 0
+panel.Active           = true
+panel.Draggable        = true
+panel.ZIndex           = 10
+panel.Parent           = screenGui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 10)
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color     = Color3.fromRGB(35, 70, 155)
+panelStroke.Thickness = 1
+panelStroke.Parent    = panel
+
+-- ── HEADER ───────────────────────────────────────
+local header = Instance.new("Frame")
+header.Size             = UDim2.new(1, 0, 0, 34)
+header.BackgroundColor3 = Color3.fromRGB(13, 15, 26)
+header.BorderSizePixel  = 0
+header.ZIndex           = 11
+header.Parent           = panel
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 10)
+
+-- square fix bottom of header
+local hFix = Instance.new("Frame")
+hFix.Size             = UDim2.new(1, 0, 0.5, 0)
+hFix.Position         = UDim2.new(0, 0, 0.5, 0)
+hFix.BackgroundColor3 = Color3.fromRGB(13, 15, 26)
+hFix.BorderSizePixel  = 0
+hFix.ZIndex           = 11
+hFix.Parent           = header
+
+local headerIcon = Instance.new("TextLabel")
+headerIcon.Size                   = UDim2.new(0, 26, 1, 0)
+headerIcon.Position               = UDim2.new(0, 8, 0, 0)
+headerIcon.BackgroundTransparency = 1
+headerIcon.Text                   = "✦"
+headerIcon.TextSize                = 12
+headerIcon.Font                    = Enum.Font.GothamBold
+headerIcon.TextColor3              = Color3.fromRGB(60, 130, 255)
+headerIcon.ZIndex                  = 12
+headerIcon.Parent                  = header
+
+local headerLbl = Instance.new("TextLabel")
+headerLbl.Size                   = UDim2.new(1, -70, 1, 0)
+headerLbl.Position               = UDim2.new(0, 30, 0, 0)
+headerLbl.BackgroundTransparency = 1
+headerLbl.Text                   = "FLY SCRIPT"
+headerLbl.TextSize                = 11
+headerLbl.Font                    = Enum.Font.GothamBold
+headerLbl.TextColor3              = Color3.fromRGB(90, 155, 255)
+headerLbl.TextXAlignment          = Enum.TextXAlignment.Left
+headerLbl.ZIndex                  = 12
+headerLbl.Parent                  = header
+
+local statusDot = Instance.new("Frame")
+statusDot.Size             = UDim2.new(0, 7, 0, 7)
+statusDot.Position         = UDim2.new(1, -40, 0.5, -3)
+statusDot.BackgroundColor3 = Color3.fromRGB(50, 60, 110)
+statusDot.BorderSizePixel  = 0
+statusDot.ZIndex           = 13
+statusDot.Parent           = header
+Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
+
+local minBtn = Instance.new("TextButton")
+minBtn.Size             = UDim2.new(0, 20, 0, 20)
+minBtn.Position         = UDim2.new(1, -26, 0.5, -10)
+minBtn.BackgroundColor3 = Color3.fromRGB(24, 28, 50)
+minBtn.BorderSizePixel  = 0
+minBtn.Text             = "−"
+minBtn.TextSize          = 13
+minBtn.Font              = Enum.Font.GothamBold
+minBtn.TextColor3        = Color3.fromRGB(90, 110, 185)
+minBtn.ZIndex           = 14
+minBtn.Parent           = header
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
+
+-- ── CONTENT AREA ─────────────────────────────────
+local content = Instance.new("Frame")
+content.Size                  = UDim2.new(1, 0, 1, -34)
+content.Position              = UDim2.new(0, 0, 0, 34)
+content.BackgroundTransparency = 1
+content.ClipsDescendants      = true
+content.ZIndex                = 11
+content.Parent                = panel
+
+-- Helper: create a category section header
+local function makeSection(yPos, icon, title)
+    local sec = Instance.new("Frame")
+    sec.Size                  = UDim2.new(1, 0, 0, 20)
+    sec.Position              = UDim2.new(0, 0, 0, yPos)
+    sec.BackgroundColor3      = Color3.fromRGB(14, 17, 30)
+    sec.BackgroundTransparency = 0
+    sec.BorderSizePixel       = 0
+    sec.ZIndex                = 12
+    sec.Parent                = content
+
+    local accent = Instance.new("Frame")
+    accent.Size             = UDim2.new(0, 2, 0, 12)
+    accent.Position         = UDim2.new(0, 7, 0.5, -6)
+    accent.BackgroundColor3 = Color3.fromRGB(45, 105, 235)
+    accent.BorderSizePixel  = 0
+    accent.ZIndex           = 13
+    accent.Parent           = sec
+    Instance.new("UICorner", accent).CornerRadius = UDim.new(1, 0)
+
+    local icn = Instance.new("TextLabel")
+    icn.Size                   = UDim2.new(0, 16, 1, 0)
+    icn.Position               = UDim2.new(0, 14, 0, 0)
+    icn.BackgroundTransparency = 1
+    icn.Text                   = icon
+    icn.TextSize                = 9
+    icn.Font                    = Enum.Font.GothamBold
+    icn.TextColor3              = Color3.fromRGB(65, 120, 220)
+    icn.ZIndex                  = 13
+    icn.Parent                  = sec
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size                   = UDim2.new(1, -34, 1, 0)
+    lbl.Position               = UDim2.new(0, 30, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text                   = title
+    lbl.TextSize                = 9
+    lbl.Font                    = Enum.Font.GothamBold
+    lbl.TextColor3              = Color3.fromRGB(55, 85, 160)
+    lbl.TextXAlignment          = Enum.TextXAlignment.Left
+    lbl.ZIndex                  = 13
+    lbl.Parent                  = sec
+
+    return sec
+end
+
+-- ════════════════════════════════════════════════
+--  CATEGORY 1: FLIGHT CONTROL  (y = 6)
+-- ════════════════════════════════════════════════
+makeSection(6, "▶", "FLIGHT CONTROL")
+
+-- Fly toggle button
+local flyBtn = Instance.new("TextButton")
+flyBtn.Size             = UDim2.new(1, -14, 0, 32)
+flyBtn.Position         = UDim2.new(0, 7, 0, 30)
+flyBtn.BackgroundColor3 = Color3.fromRGB(22, 96, 205)
+flyBtn.BorderSizePixel  = 0
+flyBtn.Text             = "▶  START FLYING"
+flyBtn.TextSize          = 11
+flyBtn.Font              = Enum.Font.GothamBold
+flyBtn.TextColor3        = Color3.fromRGB(255, 255, 255)
+flyBtn.ZIndex           = 12
+flyBtn.Parent           = content
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 6)
+
+-- Status row
+local statusRow = Instance.new("Frame")
+statusRow.Size                  = UDim2.new(1, -14, 0, 18)
+statusRow.Position              = UDim2.new(0, 7, 0, 66)
+statusRow.BackgroundTransparency = 1
+statusRow.ZIndex                = 12
+statusRow.Parent                = content
+
+local statusLbl = Instance.new("TextLabel")
+statusLbl.Size                   = UDim2.new(0.5, 0, 1, 0)
+statusLbl.BackgroundTransparency = 1
+statusLbl.Text                   = "Status"
+statusLbl.TextSize                = 9
+statusLbl.Font                    = Enum.Font.Gotham
+statusLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+statusLbl.TextXAlignment          = Enum.TextXAlignment.Left
+statusLbl.ZIndex                  = 13
+statusLbl.Parent                  = statusRow
+
+local statusVal = Instance.new("TextLabel")
+statusVal.Size                   = UDim2.new(0.5, 0, 1, 0)
+statusVal.Position               = UDim2.new(0.5, 0, 0, 0)
+statusVal.BackgroundTransparency = 1
+statusVal.Text                   = "Idle"
+statusVal.TextSize                = 9
+statusVal.Font                    = Enum.Font.GothamBold
+statusVal.TextColor3              = Color3.fromRGB(60, 75, 140)
+statusVal.TextXAlignment          = Enum.TextXAlignment.Right
+statusVal.ZIndex                  = 13
+statusVal.Parent                  = statusRow
+
+-- Divider
+local div1 = Instance.new("Frame")
+div1.Size             = UDim2.new(1, -14, 0, 1)
+div1.Position         = UDim2.new(0, 7, 0, 89)
+div1.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+div1.BorderSizePixel  = 0
+div1.ZIndex           = 12
+div1.Parent           = content
+
+-- ════════════════════════════════════════════════
+--  CATEGORY 2: SPEED  (y = 94)
+-- ════════════════════════════════════════════════
+makeSection(94, "⚡", "SPEED")
+
+-- Speed label row
+local speedLbl = Instance.new("TextLabel")
+speedLbl.Size                   = UDim2.new(0.55, 0, 0, 15)
+speedLbl.Position               = UDim2.new(0, 8, 0, 118)
+speedLbl.BackgroundTransparency = 1
+speedLbl.Text                   = "Current Speed"
+speedLbl.TextSize                = 9
+speedLbl.Font                    = Enum.Font.Gotham
+speedLbl.TextColor3              = Color3.fromRGB(55, 75, 130)
+speedLbl.TextXAlignment          = Enum.TextXAlignment.Left
+speedLbl.ZIndex                  = 12
+speedLbl.Parent                  = content
+
+local speedVal = Instance.new("TextLabel")
+speedVal.Size                   = UDim2.new(0.45, -8, 0, 15)
+speedVal.Position               = UDim2.new(0.55, 0, 0, 118)
+speedVal.BackgroundTransparency = 1
+speedVal.Text                   = tostring(flySpeed)
+speedVal.TextSize                = 10
+speedVal.Font                    = Enum.Font.GothamBold
+speedVal.TextColor3              = Color3.fromRGB(130, 185, 255)
+speedVal.TextXAlignment          = Enum.TextXAlignment.Right
+speedVal.ZIndex                  = 12
+speedVal.Parent                  = content
+
+-- Slider track
+local track = Instance.new("Frame")
+track.Size             = UDim2.new(1, -14, 0, 6)
+track.Position         = UDim2.new(0, 7, 0, 137)
+track.BackgroundColor3 = Color3.fromRGB(18, 22, 42)
+track.BorderSizePixel  = 0
+track.ZIndex           = 12
+track.Parent           = content
+Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+
+local initPct = (flySpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
+
+local fill = Instance.new("Frame")
+fill.Size             = UDim2.new(initPct, 0, 1, 0)
+fill.BackgroundColor3 = Color3.fromRGB(38, 115, 235)
+fill.BorderSizePixel  = 0
+fill.ZIndex           = 13
+fill.Parent           = track
+Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+local knob = Instance.new("Frame")
+knob.Size             = UDim2.new(0, 14, 0, 14)
+knob.AnchorPoint      = Vector2.new(0.5, 0.5)
+knob.Position         = UDim2.new(initPct, 0, 0.5, 0)
+knob.BackgroundColor3 = Color3.fromRGB(190, 215, 255)
+knob.BorderSizePixel  = 0
+knob.ZIndex           = 14
+knob.Parent           = track
+Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+-- Speed range labels
+local minLbl = Instance.new("TextLabel")
+minLbl.Size                   = UDim2.new(0.5, 0, 0, 13)
+minLbl.Position               = UDim2.new(0, 8, 0, 147)
+minLbl.BackgroundTransparency = 1
+minLbl.Text                   = "Min: " .. MIN_SPEED
+minLbl.TextSize                = 8
+minLbl.Font                    = Enum.Font.Gotham
+minLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+minLbl.TextXAlignment          = Enum.TextXAlignment.Left
+minLbl.ZIndex                  = 12
+minLbl.Parent                  = content
+
+local maxLbl = Instance.new("TextLabel")
+maxLbl.Size                   = UDim2.new(0.5, -8, 0, 13)
+maxLbl.Position               = UDim2.new(0.5, 0, 0, 147)
+maxLbl.BackgroundTransparency = 1
+maxLbl.Text                   = "Max: " .. MAX_SPEED
+maxLbl.TextSize                = 8
+maxLbl.Font                    = Enum.Font.Gotham
+maxLbl.TextColor3              = Color3.fromRGB(40, 58, 105)
+maxLbl.TextXAlignment          = Enum.TextXAlignment.Right
+maxLbl.ZIndex                  = 12
+maxLbl.Parent                  = content
+
+-- Divider
+local div2 = Instance.new("Frame")
+div2.Size             = UDim2.new(1, -14, 0, 1)
+div2.Position         = UDim2.new(0, 7, 0, 164)
+div2.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+div2.BorderSizePixel  = 0
+div2.ZIndex           = 12
+div2.Parent           = content
+
+-- ════════════════════════════════════════════════
+--  CATEGORY 3: KEYBINDS  (y = 168)
+-- ════════════════════════════════════════════════
+makeSection(168, "⌨", "KEYBINDS")
+
+local function makeBindRow(y, key, action)
+    local row = Instance.new("Frame")
+    row.Size                  = UDim2.new(1, -14, 0, 16)
+    row.Position              = UDim2.new(0, 7, 0, y)
+    row.BackgroundTransparency = 1
+    row.ZIndex                = 12
+    row.Parent                = content
+
+    local keyBadge = Instance.new("Frame")
+    keyBadge.Size             = UDim2.new(0, 38, 0, 14)
+    keyBadge.BackgroundColor3 = Color3.fromRGB(20, 26, 50)
+    keyBadge.BorderSizePixel  = 0
+    keyBadge.ZIndex           = 13
+    keyBadge.Parent           = row
+    Instance.new("UICorner", keyBadge).CornerRadius = UDim.new(0, 3)
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color     = Color3.fromRGB(32, 50, 110)
+    stroke.Thickness = 1
+    stroke.Parent    = keyBadge
+
+    local keyLbl = Instance.new("TextLabel")
+    keyLbl.Size                   = UDim2.fromScale(1, 1)
+    keyLbl.BackgroundTransparency = 1
+    keyLbl.Text                   = key
+    keyLbl.TextSize                = 8
+    keyLbl.Font                    = Enum.Font.GothamBold
+    keyLbl.TextColor3              = Color3.fromRGB(90, 140, 230)
+    keyLbl.TextXAlignment          = Enum.TextXAlignment.Center
+    keyLbl.ZIndex                  = 14
+    keyLbl.Parent                  = keyBadge
+
+    local actLbl = Instance.new("TextLabel")
+    actLbl.Size                   = UDim2.new(1, -46, 1, 0)
+    actLbl.Position               = UDim2.new(0, 44, 0, 0)
+    actLbl.BackgroundTransparency = 1
+    actLbl.Text                   = action
+    actLbl.TextSize                = 8
+    actLbl.Font                    = Enum.Font.Gotham
+    actLbl.TextColor3              = Color3.fromRGB(50, 72, 130)
+    actLbl.TextXAlignment          = Enum.TextXAlignment.Left
+    actLbl.ZIndex                  = 13
+    actLbl.Parent                  = row
+end
+
+makeBindRow(192, "F",       "Toggle fly on/off")
+makeBindRow(210, "W/A/S/D", "Directional flight")
+makeBindRow(228, "Space",   "Ascend")
+makeBindRow(246, "L-Shift", "Descend")
+
+-- Divider
+local div3 = Instance.new("Frame")
+div3.Size             = UDim2.new(1, -14, 0, 1)
+div3.Position         = UDim2.new(0, 7, 0, 266)
+div3.BackgroundColor3 = Color3.fromRGB(18, 22, 40)
+div3.BorderSizePixel  = 0
+div3.ZIndex           = 12
+div3.Parent           = content
+
+-- ════════════════════════════════════════════════
+--  CATEGORY 4: INFO  (y = 270)
+-- ════════════════════════════════════════════════
+makeSection(270, "ℹ", "INFO")
+
+local infoLbl = Instance.new("TextLabel")
+infoLbl.Size                   = UDim2.new(1, -14, 0, 15)
+infoLbl.Position               = UDim2.new(0, 8, 0, 292)
+infoLbl.BackgroundTransparency = 1
+infoLbl.Text                   = "Universal Fly Script  •  v3.0"
+infoLbl.TextSize                = 8
+infoLbl.Font                    = Enum.Font.Gotham
+infoLbl.TextColor3              = Color3.fromRGB(38, 55, 100)
+infoLbl.TextXAlignment          = Enum.TextXAlignment.Left
+infoLbl.ZIndex                  = 12
+infoLbl.Parent                  = content
+
+-- ================================================
+--  MINIMIZE
+-- ================================================
+local minimized = false
+minBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        TweenService:Create(panel, tweenEase, {Size = UDim2.new(0, PANEL_W, 0, 34)}):Play()
+        minBtn.Text = "+"
+    else
+        TweenService:Create(panel, tweenEase, {Size = UDim2.new(0, PANEL_W, 0, PANEL_H_FULL)}):Play()
+        minBtn.Text = "−"
+    end
+end)
+
+-- ================================================
+--  SLIDER INPUT
+-- ================================================
+local dragging = false
+
+local function applySlider(inputX)
+    local tX  = track.AbsolutePosition.X
+    local tW  = track.AbsoluteSize.X
+    local pct = math.clamp((inputX - tX) / tW, 0, 1)
+    flySpeed  = math.floor(MIN_SPEED + pct * (MAX_SPEED - MIN_SPEED))
+    fill.Size       = UDim2.new(pct, 0, 1, 0)
+    knob.Position   = UDim2.new(pct, 0, 0.5, 0)
+    speedVal.Text   = tostring(flySpeed)
+end
+
+track.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        applySlider(inp.Position.X)
+    end
+end)
+knob.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+    end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
+                  or inp.UserInputType == Enum.UserInputType.Touch) then
+        applySlider(inp.Position.X)
+    end
+end)
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- ================================================
+--  FLY ENGINE
+-- ================================================
+local function enableFly()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum  = char:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
+
+    hum.PlatformStand = true
+
+    bodyVelocity           = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity  = Vector3.zero
+    bodyVelocity.MaxForce  = Vector3.new(1e5, 1e5, 1e5)
+    bodyVelocity.Parent    = root
+
+    bodyGyro           = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    bodyGyro.D         = 100
+    bodyGyro.CFrame    = root.CFrame
+    bodyGyro.Parent    = root
+
+    flyConnection = RunService.Heartbeat:Connect(function()
+        local c = player.Character
+        if not c then return end
+        local r = c:FindFirstChild("HumanoidRootPart")
+        if not r then return end
+
+        local dir = Vector3.zero
+        local cam = camera.CFrame
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W)         then dir += cam.LookVector  end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S)         then dir -= cam.LookVector  end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A)         then dir -= cam.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D)         then dir += cam.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space)     then dir += Vector3.yAxis   end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir -= Vector3.yAxis   end
+
+        if dir.Magnitude > 0 then dir = dir.Unit end
+
+        if bodyVelocity and bodyVelocity.Parent then
+            bodyVelocity.Velocity = dir * flySpeed
+        end
+        if bodyGyro and bodyGyro.Parent then
+            bodyGyro.CFrame = cam
+        end
+    end)
+end
+
+local function disableFly()
+    if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+    if bodyVelocity  then bodyVelocity:Destroy();    bodyVelocity  = nil end
+    if bodyGyro      then bodyGyro:Destroy();         bodyGyro      = nil end
+
+    local char = player.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.PlatformStand = false end
+    end
+end
+
+local function setVisuals(on)
+    if on then
+        TweenService:Create(flyBtn,      tweenEase, {BackgroundColor3 = Color3.fromRGB(185, 38, 38)}):Play()
+        TweenService:Create(statusDot,   tweenEase, {BackgroundColor3 = Color3.fromRGB(55, 215, 115)}):Play()
+        TweenService:Create(panelStroke, tweenEase, {Color            = Color3.fromRGB(55, 195, 110)}):Play()
+        flyBtn.Text    = "■  STOP FLYING"
+        statusVal.Text = "Flying"
+        TweenService:Create(statusVal,   tweenEase, {TextColor3 = Color3.fromRGB(75, 215, 130)}):Play()
+    else
+        TweenService:Create(flyBtn,      tweenEase, {BackgroundColor3 = Color3.fromRGB(22, 96, 205)}):Play()
+        TweenService:Create(statusDot,   tweenEase, {BackgroundColor3 = Color3.fromRGB(50, 60, 110)}):Play()
+        TweenService:Create(panelStroke, tweenEase, {Color            = Color3.fromRGB(35, 70, 155)}):Play()
+        flyBtn.Text    = "▶  START FLYING"
+        statusVal.Text = "Idle"
+        TweenService:Create(statusVal,   tweenEase, {TextColor3 = Color3.fromRGB(60, 75, 140)}):Play()
+    end
+end
+
+local function toggleFly()
+    flying = not flying
+    if flying then enableFly() else disableFly() end
+    setVisuals(flying)
+end
+
+-- ================================================
+--  INTERACTIONS
+-- ================================================
+flyBtn.MouseButton1Click:Connect(toggleFly)
+
+flyBtn.MouseEnter:Connect(function()
+    TweenService:Create(flyBtn, tweenEase, {BackgroundTransparency = 0.18}):Play()
+end)
+flyBtn.MouseLeave:Connect(function()
+    TweenService:Create(flyBtn, tweenEase, {BackgroundTransparency = 0}):Play()
+end)
+
+UserInputService.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.F then toggleFly() end
+end)
+
+player.CharacterAdded:Connect(function()
+    flying = false
+    setVisuals(false)
+    bodyVelocity, bodyGyro = nil, nil
+    if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+end)
